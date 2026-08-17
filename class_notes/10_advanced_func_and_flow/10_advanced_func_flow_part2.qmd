@@ -1,0 +1,396 @@
+---
+title: "Bio 724D: Advanced control flow and functions, part 2"
+format: 
+  html:
+    toc: true
+    embed-resources: true
+---
+
+
+#### Libraries
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+## Purr's map functions
+
+For-loops and other branching constructs are concepts used not just in R, but in almost every programming language. However, there are another set of control flow concepts that come from so called "functional programming" paradigms, that are less familiar, but also very powerful.  
+
+Here we introduce the basic idea of "map functions" which are fundamental to many functional programming languages.  The map function we're going to use are part of the `purr` package which  is loaded when we load `tidyverse`. 
+
+
+### basic `map`
+
+Typically, `map` takes two arguments -- a sequence (a vector, list, or data frame) and a function.  It then applies the function to each element of the sequence, returning the results as a list.
+
+To illustrate `map`, let's consider an example with a list of 2-vectors, where each vector gives the min and max values of some variable of interest for individuals in a sample (e.g. resting heart rate and maximum heart rate during exercise).  We can use the `map` function to quickly generate the difference between the resting and maximum heart rates:
+
+```{r}
+heart.rates <- list(bob = c(60, 120), fred = c(79, 150), jim = c(66, 110))
+
+diff.fxn <- function(x) {
+  x[2] - x[1]
+}
+
+# apply the diff.fxn to every item in heart.rates
+map(heart.rates, diff.fxn)
+```
+
+As a second example, here's how we could use `map` to get the class of each object in a list:
+
+```{r}
+x <- list(c(1,2,3), "a", "b", list(lead = "Michael", keyboard = "Jermaine"))
+map(x, class)
+```
+
+
+### `map_if` and `map_at`
+
+`map_if` is a variant of `map` that takes a predicate function (a function that evaluates to TRUE or FALSE) to determine which elements of the input sequence are transformed by the map function.  All elements of the sequence that do not meet the predicate are left un-transformed. 
+
+`map_at` take a vector of names or position, `.at`, which specifies which a=elements to apply the function to.
+
+Like `map`, `map_if` and `map_at` always returns lists.
+
+Here's an example of using `map_if`:
+
+```{r}
+x <- list(c(1,2,3), "a", "b", list(lead = "Michael", keyboard = "Jermaine"))
+
+map_if(x, is_character, str_to_upper)
+# compare the output you would get if instead you did the following
+# map(x, str_to_upper)
+```
+
+
+
+### mapping in parallel using `map2`
+
+The `map2` function applies a transformation function to two sequences in parallel.  The following example illustrates this:
+
+```{r}
+first.names <- c("John", "Mary", "Fred")
+last.names <- c("Smith", "Hernandez", "Kidogo")
+
+map2(first.names, last.names, str_c, sep=" ")
+```
+
+Note how we can specify  arguments to the transformation function as additional arguments to `map2` (i.e., the `sep` argument gets passed to `str_c`)
+
+
+
+### `map` variants that return vectors
+
+`map`, `map_if`, and `map_at` *always return lists*. The `purrr` library also has a series of `map` variants that *return vectors*:
+
+* `map_lgl` (for logical vectors)
+* `map_chr` (for character vectors)
+* `map_int` (integer vectors)
+* `map_dbl` (double vectors)
+
+```{r}
+# compare the outputs of map and map_chr
+a <- map(letters[1:6], str_to_upper)
+str(a)
+```
+
+```{r}
+b <- map_chr(letters[1:6], str_to_upper)
+str(b) # a vector
+```
+
+Here's an example using `map_dbl`, where we create a data frame with three columns, and compute the median of each column:
+
+```{r}
+# Make data frame for analysis
+df <- tibble(a = rnorm(100), b = rnorm(100),c = rnorm(100))
+
+map_dbl(df, median) # median of each column of df
+```
+
+You might think to yourself, "Oh, couldn't I do that with dplyr::summarize?". Indeed you can:
+
+```{r}
+df |>
+  summarize(across(where(is.double), median))
+```
+
+How do the results from the example `map_dbl` and `summarize` differ?
+
+
+
+## Environment and Scope: How R knows what you're referring to
+
+### Environments
+
+When we refer to a variable in R, the interpreter looks through the set of "environments" it keeps track of to see if it can find an object with a matching name.
+
+R first looks in what it considers the "current environment" (the environment in which the code is executing). If you are in an interactive session, R  then looks at the "global environment".  If it doesn't find the variable in the local or global environment, in then looks through other environments it's aware of (typically loaded packages).
+
+The function `environment()` is useful for asking what you current environment is:
+
+```{r}
+# what's my current environment
+environment()
+```
+
+`environment()` can also be used to query what environment a variable is found in:
+
+```{r}
+# what environment is the function mean found in?
+environment(mean) 
+```
+
+And another example
+```{r}
+# where is filter found?
+environment(filter)
+```
+
+#### Environment search and defined objects
+
+The `search()` function shows us the environments R searches (and their order):
+
+```{r}
+search()
+```
+
+The "global" environment is designated ".GlobalEnv" in the output of `search`. In this example we also see a bunch of tidyverse packages in the search path because we loaded tidyverse in our current session.
+
+
+The function `ls()` (or the equivalent `objects()`)  returns a list of the names of objects in our current environment:
+
+```{r}
+x <- 10
+y <- "Hello, world!"
+
+ls()
+```
+
+`ls()` can also be called with an environment to return the names of objects in the specified environment:
+
+```{r}
+# list the names of objects in the string package
+ls(`package:stringr`)
+```
+
+When you create or invoke a function, the function has it's own environment. That is inside the function, the "current environment" is local to the function, it's not the environment from which the function was called:
+
+```{r}
+
+x <- 10
+y <- "Hello"
+
+foo <- function() {
+  print("Environment and ls() within foo:")
+  print(environment())
+  print(ls())
+}
+
+foo()
+```
+
+Compare the above to calling environment() and ls() in the global environment:
+```{r}
+environment()
+ls()
+```
+
+
+
+### Scope
+
+In programming, the term "scope" refers to concept that access to object names can only be accessed from particular regions of a program. Understanding the basic rules of scope will help you to write more robust  code and diagnose lurking bugs.
+
+
+Here are some key rules of scope in to keep in mind when writing functios in RR. For a full discussion of scoping rules I recommend checking out [section 6.4 in the "Advanced R" book](https://adv-r.hadley.nz/functions.html#lexical-scoping).
+
+
+
+#### Name masking
+
+Names defined inside a function "mask" names defined outside a function.
+
+```{r}
+x <- 10
+
+foo <- function() {
+  x <- 5       # outer x not affected
+  return(x^2)
+}
+
+foo()
+x # x in global environment not affected
+```
+
+#### Name lookup for variables outside of a function
+
+ If a name isn't defined inside the function, R looks one level up in the hierarchy of environments:
+
+```{r}
+x <- 10
+y <- 3
+
+bar <- function() {
+  x <- 5  # outer x not affected
+  # y not an argument of defined in function so looks in global envt
+  # if not found in global envt look in other environments in the search path
+  return(x^2 + y)  
+}
+
+bar()
+```
+
+#### Modifying global variables in functions
+
+You can't modify an object in the global environment using the standard assignment operator (`<-`), instead you need to use the "super assignment" operator (`<<-`).
+
+This first example shows that the standard assignment operator doesn't modify the variable `x` defined in the global environment:
+
+```{r}
+x <- 10
+
+wont.work <- function() {
+  x <- x + 1  # x on the right is global, on the left is local
+  print(x)
+}
+
+wont.work()
+print(x)
+
+```
+
+However, using the super assignment operator (`<<-`) you can modify the `x` in the enclosing environment:
+
+```{r}
+
+x <- 10
+
+will.work <- function() {
+  x <<- x + 1  # note super assignment, sets the global x
+  print(x)
+}
+
+will.work()
+print(x)
+
+```
+
+#### Function invocation creates a new environment
+
+Every time a function is invoked a new environment is created. Changes made to function local variables in one call to the function don't typically carry over :
+
+
+```{r}
+
+self.ct <- function() {
+  if (exists("ct")) {
+    ct <- ct + 1
+  } else {
+    ct <- 1
+  }
+  print(str_c("Does ct exist? ", exists("ct"), sep=" "))
+  print(str_c("I've been called", ct, "times!", sep=" "))
+}
+
+self.ct()
+self.ct()
+
+```
+
+R does include a mechanism for maintaining state across different called "closures" but this is a fairly advanced topic. 
+
+
+
+#### Lookup in functions is dynamic
+
+In functions, lookup rules apply when the function is run not when the function is created:
+
+
+```{r}
+x <- 10
+
+foo <- function(){
+  x^2  # x not locally defined so lookup from global envt
+}
+
+foo()
+
+# If we redefine x in global envt, it affects x inside foo because
+# of dynamic lookup
+x <- 20 
+foo()
+```
+
+
+
+
+#### Lazy evaluation of function arguments
+
+Function arguments are only evaluated if they're referenced. That is, any computation involving the arguments is delayed until the argument is needed.
+
+
+```{r}
+
+baz <- function(x, evaluate.x = FALSE) {
+  if (evaluate.x) {
+    x
+  } else {
+    print("Never saw x")
+  }
+}
+
+# compare what you get when you set evaluate.x = TRUE
+baz(stop("I'm quitting!"), evaluate.x = FALSE)
+
+```
+
+
+
+## R scripts
+
+As you build up a set of related functions, you'll often find you want to use these functions across different Quarto notebooks or analyses.  Copying the code for these functions across multiple notebooks is tedious and error prone, and almost always leads to multiple slightly different versions of important functions. A better approach is to put your important functions in a single library which can be called from multiple notebooks. This also means your important functions can be updated and improved in a central location.  This is where R scripts come in.
+
+An R script is a plain text file of R code, conventionally with the file extension `.R`.  Unlike Quarto notebooks you can **only** have valid R code in an Rscript (i.e. think of an R script as one long code block).
+
+### Creating an R script
+
+Within R Studio you can create an R Script file by choosing:
+
+* `File > New File > R script`
+
+* The convention of R script is to give them the extension `.R`
+
+
+#### Your turn: Create an R script for the poem analysis function
+
+* Create an R script, `poemfxns.R` 
+
+* Add the library calls and functions from [the poem analysis example](https://bio724d.github.io/Bio724D_2025_2026/poems_analysis_inclass.html) to your R script.
+
+
+### Reading objects from a R script using `source()`
+
+Once you've created an R script, you can access the functions and any variables defined in that script by useing `source()` to read it in:
+
+```{r, eval=FALSE}
+# source the poemfxns.R file
+source("poemfxns.R")
+```
+
+
+* Sourcing an Rscript is like typing to the code directly into the console and evaluating it -- all objects (functions, values, data) created in the Rscript are created in the current environment (typically the global environment).
+
+
+
+### Creating your own package
+
+The process of creating your own R package that can be loaded via the `library()` function is a little more involved.  However, RStudio makes it relatively painless to do so using the `New Project...` dialog. See the [RStudio documentation on Writing Packages](https://docs.posit.co/ide/user/ide/guide/pkg-devel/writing-packages.html) for more info.
+
+
+
+
+
+
+

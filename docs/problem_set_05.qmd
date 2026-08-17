@@ -1,0 +1,98 @@
+---
+title: "Assignment 05: Data wrangling"
+format: 
+  html:
+    embed-resources: true
+editor: source
+---
+
+# Instructions
+
+Create a Quarto markdown document and answer the questions below using code blocks that generate the correct outputs. We encourage you to include explanatory text in your markdown document, however **each of your solutions should show how to generate the answer using R code**.
+
+Write "robust" solutions wherever possible. A good rule of thumb for judging whether your solution is appropriately "robust" is to ask yourself "If I added additional observations or variables to this data set, or if the order of variables changed, would my code still compute the right solution?"
+
+Make sure your markdown is nicely formatted -- use headers, bullets, numbering, etc so that the structure of the document is clear.
+
+Make sure to "Render" your document before submission to confirm that all code blocks and formatting is as you expect.
+
+When completed, title your markdown file as follows (replace `XX` with the assignment number, e.g. `01`, `02`, etc):
+
+-   `netid-assignment_XX.qmd`
+
+Submit both your markdown file (`.qmd`) and the generated HTML document (`.html`) on your Github site.
+
+
+
+### Problems
+
+### Wrangling a messy data set
+
+Gasch AP, Spellman PT, Kao CM, Carmel-Harel O, Eisen MB, Storz G, Botstein D, Brown PO. Genomic expression programs in the response of yeast cells to environmental changes. Mol Biol Cell. 2000 Dec;11(12):4241-57. doi: 10.1091/mbc.11.12.4241. PMID: 11102521; PMCID: PMC15070.
+
+Gasch et al. (2000) is another "classic" gene expression data set from the early days of functional genomics. The file [`gasch1k.csv`](https://github.com/Bio724D/Bio724D_2024_2025/raw/refs/heads/main/data/gasch1k.csv) is a subset of the data from that study.
+
+A few notes about this data set:
+
+* The first column of data describes the experimental conditions but this column has no header
+
+* Subsequent columns are genes, with systematic gene IDs as headers
+
+* The experimental conditions in the first column are not particularly consisten in terms of how they designate the conditions (and time points where appropriate)
+
+#### Working with the Gasch data
+
+Wrangle the data by carrying out the following steps, in order:
+
+1. Import the data, fixing any column naming issues
+
+2. Remove any columns (genes) that have more than 10 missing values ('NA')
+
+3. Subset the rows of the data set to include ONLY the experimental conditions that have time points on the scales of minutes (conditions with "min", "minutes", etc).
+
+4. Apply pivoting to create a "long" version of the data frame with "gene" and "expression" as their own columns.
+
+5. CHALLENGING/ADVANCED: See if you can come up with a strategy for extracting the time information from the experimental condition column. The inconsistency of the naming scheme makes this a difficult and frustrating task.  A verbal description of what steps you'd take to solve this problem is sufficient. If you manage to write code to solve this, your string wrangling skills are already quite strong!
+
+
+#### Other problems
+
+6.  Imagine a situation where you are working with data from a weather station. Each month, you receive a `.csv` file containing the latest data: one row for each day and 7 columns reporting the date, rainfall, minimum and maximum temperatures, etc. Because the data are always delivered in the same way, you decide to use `bind_rows()` to attach each month's new data to your existing data frame. One month, you receive a `.csv` file that when merged generates a data frame with 11 columns instead of the expected 7. Upon examination of new `.csv` file, you discover that some of columns have been assigned slightly modified names. 
+
+    a) Why did this cause the merge operation to create additional columns?
+    
+    b) You could write some code to rename the columns before you merge each new data frame, and continue to use `bind_rows()` to append the data. However, this won't protect you from future changes in column name. 
+  
+    c) How could using a join rather than a merge avoid this kind of problem in the future? What specific join method would be appropriate for this situation? Which column(s) would you use for the join? 
+    
+    d) Having thought through these considerations, provide sample code that implements a join to append the weather data. 
+    
+    e) Would this method of appending monthly data work no matter how the columns are named? Would it work if the columns kept the same names but were present in a different order? Would it work if additional columns were added to the monthly data files?
+    
+
+7. Joins provide a useful way to combine data from two different data frames. Joins are also very commonly used to extract specific information by drawing from two data frames at once. To do this using `dplyr` tools, you can follow a join with `filter`, `arrange`, and/or `select` to create powerful queries.  Using the `yeast_spellman-1998-expression.tsv` file used in class answer the following:
+
+    a) How many yeast genes that are expressed in the nucleus show a decrease in gene expression in the "alpha7" experiment? To answer that question, left join the two data frames as we did in class, then pipe the result into a filter for "nucleus" in column `C`, then pipe that result into a filter for <0 in column `alpha7`, then pipe that result into nrow(). Try it out! You should get 472.
+    
+    b) Now use this approach to answer a few more questions. For each, write the entire process as a single pipe rather than a sequence of individual commands.
+    
+    c) How many ribosomal RNA genes increase in expression in both experiment `alpha7` and `alpha14`? (Hint: filter for "rRNA_gene" in column `gene_type`.)
+    
+    d) Which ribosomal RNA gene decreased in expression the most in experiment `alpha7`? 
+    
+    e) How many genes that are not expressed in the nucleus increased in expression in `alpha7` and decreased in expression in `alpha14`?
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+## Data lunch assignment
+
+Identify something that you learned from the presentation or discussion on Thursday that you found valuable. Provide a brief reflection here (1-5 sentences) and include code or pseudo-code if useful. Hint: if you have specific code examples, consider adding them to your notebook as well.
+
+

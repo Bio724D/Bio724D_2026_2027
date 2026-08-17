@@ -1,0 +1,47 @@
+---
+title: "Assignment 03: Data visualiztion"
+format: 
+  html:
+    embed-resources: true
+editor: source
+---
+
+# Instructions
+
+Create a Quarto markdown document and answer the questions below using code blocks that generate the correct outputs. We encourage you to include explanatory text in your markdown document, however **each of your solutions should show how to generate the answer using R code**.
+
+Write "robust" solutions wherever possible. A good rule of thumb for judging whether your solution is appropriately "robust" is to ask yourself "If I added additional observations or variables to this data set, or if the order of variables changed, would my code still compute the right solution?"
+
+Make sure your markdown is nicely formatted -- use headers, bullets, numbering, etc so that the structure of the document is clear.
+
+Make sure to "Render" your document before submission to confirm that all code blocks and formatting is as you expect.
+
+When completed, title your markdown file as follows (replace `XX` with the assignment number, e.g. `01`, `02`, etc):
+
+-   `netid-assignment_XX.qmd`
+
+Submit both your markdown file (`.qmd`) and the generated HTML document (`.html`) on your Github site.
+
+
+
+### Problems
+
+
+Using the [NC Births dataset](https://github.com/Bio723-class/example-datasets/raw/master/nc-births.txt), generate the following plots. For each plot use appropriate readable axis labels, colors, etc. 
+
+
+1. A scatter plot showing the relationship between weeks of gestation and birth weight, with points colored by birth status (premature vs full term).
+
+2. A density plot showing the distribution of baby birth weights for smoking and non-smoking mothers. Use `geom_rug` to depict the marginal distributions.
+
+3. A boxplot comparing birth weight for premature and full term babies, with mother's smoking status indicated by color.
+
+4. Draw a scatter plot showing the relationship between mothers age and fathers age. Look up how to use `ggplot2::coord_fixed()` to insure that the x- and y-axes have a fixed ratio, and modify the plot limits to include the origin. Color the points by birth status.
+
+
+
+## Data lunch assignment
+
+Identify something that you learned from the presentation or discussion on Thursday that you found valuable. Provide a brief reflection here (1-5 sentences) and include code or pseudo-code if useful. Hint: if you have specific code examples, consider adding them to your notebook as well.
+
+

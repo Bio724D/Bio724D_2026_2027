@@ -1,0 +1,306 @@
+---
+title: "Bio 724: Strings basics using Stringr"
+author: "Paul Magwene"
+format: 
+  html:
+    embed-resources: true
+---
+
+
+## Introduction
+
+In most programming language, strings are the most generic data type, in that most  other data types can be converted to a string representation but only a subset of strings can be converted to the more specialized data types.  
+
+In R, strings are represented by the `character` data type. In this document I will use the term `character` and strings interchangeably. 
+
+As we've done in past lectures, we'll be emphasizing string related functions from the tidyverse, provided by the package ["stringr"](https://stringr.tidyverse.org/). Be aware that there are many base R functions with similar string manipulation functionality; you'll likely encounter such base R functions if you search the web for help.
+
+## Libraries
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+
+## Creating strings 
+
+We can create strings on the fly in a variety of different ways:
+
+
+```{r}
+s1 <- 'This is a string'       # single quotes
+s2 <- "This is also a string"  # double quotes
+
+# Having both quoting styles allowing for nesting
+s3 <- "You can nest 'single quotes' in double quotes"
+s4 <- 'She said, "I prefer to nest double quotes in my single quotes"'
+
+s5 <- as.character(3.14)    # string from a double
+s6 <- as.character(1 + 1i)  # string from a complex number
+s7 <- as.character(TRUE)  # strings from a boolean
+```
+
+## String length
+
+Remember that all atomic data types are actually vectors in R:
+
+```{r}
+# character vector of length 1
+hello <- "Hello, world!"
+
+# character vector of length 
+greetings <- c("Hello, world!", "Howdy, pardner!") 
+```
+
+So when we apply the `length()` function we get not the number of characters in a string, but rather the number of strings in the vector:
+
+```{r}
+length(hello)
+length(greetings)
+```
+
+To get the number of characters in a string we can use the `stringr::str_length` function:
+
+
+```{r}
+# number of characters in each string in the vector
+str_length(hello) 
+str_length(greetings)
+```
+
+
+
+## Special characters
+
+The R character type supports unicode values, so you can create strings with characters from different alphabets or even emojis in them:
+
+```{r}
+hello_japan <- "こんにちは"
+hello_emoji <- "👋"
+```
+
+
+Some characters, like tabs and newlines lines are "invisible" so we need a special way to represent them. R (and many other programming languages) use "character escaping" to write such characters, as illustrated below:
+
+```{r}
+# \t = TAB character
+with_tab <- "A line of text\tWith a tab" 
+
+# \n = newline (return)
+with_newline <- "A line of text\nWith a newline" 
+```
+
+## The `cat` and `print` functions
+
+The cat function, when applied to strings, will print to your screen a representation of the string data with special characters interpretted appropriately:
+
+```{r}
+cat(with_tab)
+
+cat(with_newline)
+```
+
+The `print` function on the other hand returns a character vector representing the argument(s) passed to it:
+
+```{r}
+# contrast the output produce by print to that of cat
+print(with_newline)
+```
+
+An important difference is that `cat` returns a NULL object wile `print` returns the character object.
+
+
+## Reading a file as a string
+
+The `readr::read_file` function will read all the text in a file as a single string object.
+
+
+```{r}
+seuss <- read_file("cat_in_hat_excerpt.txt")
+```
+
+```{r}
+seuss
+```
+
+
+```{r}
+cat(seuss)
+```
+
+
+
+## Combining strings
+
+```{r}
+str_c(hello, hello_emoji)
+```
+
+```{r}
+# when you have a vector of strings and 
+# you want to combine them into a single string
+str_flatten(greetings, collapse = " ")
+
+# what happens when you leave out the collapse argument?
+```
+
+## String interpolation
+
+A very useful function when working with strings is `stringr::str_glue` which provides facilities for "string interpolation".
+
+String interpolation provides a convenient syntax for inserting/interpolation the values of variables in string objects like shown below:
+
+
+```{r}
+# choose a single random integer between 1 and 10
+x <- sample(1:100, 1)
+
+choicestr <- str_glue("The integer I chose was {x}!")
+choicestr
+```
+
+
+
+## Simple string manipulation
+
+
+```{r}
+phrase <- "How now, Brown Cow?"
+
+str_to_upper(phrase)
+
+str_to_lower(phrase)
+
+str_to_title(phrase)
+
+str_to_sentence(phrase)
+```
+
+Some useful "cleaning operations" include `str_trim` (trim whitespace at ends of string) and `str_squish` (trim whitespace at ends AND within):
+```{r}
+whitespace <- "   This string has\nlots of      whitespace\taround it and in it.   "
+
+trimmed <- str_trim(whitespace)
+
+squished <- str_squish(whitespace)
+
+print(whitespace)
+print(trimmed)
+print(squished)
+```
+
+```{r}
+cat("Original version:\n", whitespace, "\n\n", sep="")
+cat("Trimmed version:\n", trimmed, "\n\n", sep="")
+cat("Squished version:\n", squished, sep="")
+```
+
+
+
+## Substrings
+
+```{r}
+str_sub(phrase, 5, 7)
+str_sub(phrase, 5) # from 5 to end
+str_sub(phrase, 5, -2) # from 5 to two from the end
+```
+
+`str_sub` can be used with assignment to replace characters, but *BE CAREFUL* as this modifies the string passed in *in-place*.
+
+```{r}
+str_sub(phrase, 5, 7) <- "NOW" 
+phrase
+```
+
+## String splitting
+
+Split a single string. Returns a vector:
+```{r}
+# takes one string as input as splits on given pattern
+str_split_1(phrase, " ") 
+```
+
+Apply a splitting operation to multiple strings. Returns a list:
+```{r}
+phrases <- c("A wolf in sheeps clothing", 
+             "That which does not kill us makes us stronger")
+
+# takes a vector of strings as inputs and splits on given pattern
+str_split(phrases, " ")
+```
+
+
+Access the splits in the list
+```{r}
+split_phrases <- str_split(phrases, " ") 
+split_phrases[[1]]  # get the splits for the first string in phrases
+```
+
+
+## String matching
+
+```{r}
+phrase <- "How now, Brown Cow?"
+```
+
+Count the number of times you find a match:
+```{r}
+str_count(phrase, "ow")
+```
+
+Give the indices of the first match:
+```{r}
+str_locate(phrase, "ow")
+```
+
+Give the indices of all the matches
+```{r}
+str_locate_all(phrase, "ow")
+```
+
+Return a string with the first match replaced
+```{r}
+str_replace(phrase, "ow", "OW")
+```
+
+Return a string with all the matches replaced
+```{r}
+str_replace_all(phrase, "ow", "OW")
+```
+
+
+## Data frame oriented splitting/combining in tidyr 
+
+Tidyr provides a number of functions for string manipulation in a data frame context:
+
+
+Consider the `starwars` data set that is part of dplyr:
+```{r}
+head(starwars)
+```
+
+We can split the `name` column into first and last names using the `tidyr::separate_wider_delim` as follows:
+
+```{r}
+newstarwars <-
+  starwars |>
+  separate_wider_delim(name, 
+                       delim=" ", 
+                       names=c("first_name", "last_name"),
+                       too_few = "align_start",
+                       too_many = "merge")
+
+head(newstarwars)
+```
+In the example above, the arguments `too_few` and `too_many` were important in order to deal with cases where there was only a single name or more than 2 names.
+
+The `unite` function does the opposite:
+```{r}
+
+newstarwars |>
+  unite("UnitedName", first_name:last_name, 
+        sep = "_", na.rm = TRUE)
+
+```
+
+
