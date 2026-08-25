@@ -53,7 +53,7 @@ The `readr` package is one of the libraries included when we installed the tidyv
 
 ## Load a data file using `readcsv`
 
-If you haven't already, download [`penguins.csv`](), save it to the folder we asked you to create in your home directory (`~/Bio724`) and load it as follows:
+If you haven't already, download [`penguins.csv`](https://github.com/Bio724D/Bio724D_2025_2026/raw/main/data/penguins.csv), save it to the folder we asked you to create in your home directory (`~/Bio724`) and load it as follows:
 
 ```{r}
 penguins <- read_csv("~/Bio724/penguins.csv")
