@@ -85,23 +85,13 @@ In the examples above, we created vectors of length 1. The simplest way to creat
 You can also use `c` to create longer vectors: 
 
 ```{r}
-var_10 <- c(var_10, "i", "j")
-var_10
-new_data <- c("x", "y", "z")
-var_10 <- c(var_10, new_data)
-var_10
+
 ```
 
 The same approaches work for numeric and logical values:
 
 ```{r}
-var_11 <- c(33, 22, 11)
-var_11
-typeof(var_11)
-var_12 <- c(FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
-var_12
-typeof(var_12) 
-length(var_12)
+
 ```
 
 ## Data structures
@@ -228,8 +218,7 @@ Ranges can be in decreasing order:
 **Indexing arrays.** To index an array, provide two values: row and column. First, re-create the array we made earlier:
 
 ```{r}
-var_20 <- matrix(1:24, nrow=3)   
-var_20
+
 ```
 
 Retrieve one value:
@@ -377,19 +366,28 @@ R replaced the three existing values with the first 3 replacement values and ign
 i <- c("Turning and turning in the widening gyre")
 i
 
+# now include a loop
+for(i in 1:10){
+  next
+}
+i
 ```
 The string initially assigned to `i` was over-written, even though we did not explicitly use the assignment operator later in our code. Longer, more descriptive variable names can help reduce the chances that this will happen to you!
 
 **4. The RHS is fully evaluated before assignment happens.** Unlike most programming languages, R uses `<-` instead of `=` to indicate assignment. This is a *very* helpful reminder, because we are so familiar with thinking about `=` in the mathematical sense of indicating equivalence. In computer programming, however, the two sides of an assignment statement are *not* equivalent: the right hand side (RHS) is first fully evaluated, and only then is it assigned to the left hand side (LHS). This is obvious during reassignment, for example:
 
 ```{r}
-
+my_var <- 42
+my_var <- my_var + 1000   # note that 42 ≠ 1042! 
 ```
 
 The RHS can be as simple or complicated as you want. Use standard algebraic notation to indicate your desired order of operations on the RHS.
 
 ```{r}
-
+my_new_var <- c(1:20)
+my_new_var
+my_new_var <- sqrt((my_new_var * my_var) / pi)
+my_new_var
 ```
 Combining operations into one statement can make code more readable -- to a point. If the RHS is complicated, it can become difficult to follow the logic. In such cases, consider splitting steps into multiple lines of code for clarity. 
 
