@@ -410,6 +410,7 @@ penguins |>
 `mutate` can be used to derived or new columns:
 
 ```{r}
+#| output: false
 # create a derived column, body_mass_kg, in penguins
 penguins |>
   mutate(body_mass_kg = body_mass_g / 1000) |>
@@ -456,6 +457,7 @@ Look at help for `read_csv` / `read_tsv` / `read_delim`:
 You've already seen how to import a "well formed" CSV file using the `readr::read_csv` function.
 
 ```{r}
+#| output: false
 penguins <- read_csv("~/Bio724/penguins.csv")
 ```
 
@@ -486,12 +488,14 @@ You can read only a subset of columns using the `col_select` argument to the `re
 
 
 ```{r}
+#| output: false
 # read first six columns of data file
 spellman_6 <- read_tsv("~/Bio724/spellman-1998-expression.tsv",
                        col_select = 1:6)
 ```
 
 ```{r}
+#| output: false
 head(spellman_6)
 ```
 

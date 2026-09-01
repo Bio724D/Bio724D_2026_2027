@@ -143,7 +143,6 @@ births <- read_tsv("https://github.com/Bio723-class/example-datasets/raw/master/
 
 15. Generate a data frame with only the premature babies, and then remove the redundant "premature" column (this is no longer variable in your derived data)
 
-16. Using `groupby` and `summarize`, generate a data frame that gives the median birth weight of premature babies grouped by mother's smoking status.
   
 
 ## Data lunch assignment
