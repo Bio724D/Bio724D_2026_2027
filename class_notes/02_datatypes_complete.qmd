@@ -20,7 +20,7 @@ penguins <- read_csv("penguins.csv")
 
 ## Basic data types
 
-R provides six basic data types: **Integer**: stores whole numbers. **Double**: stores floating point numbers. The term "double" is short for double-precision, which means that twice as much memory is allocated to store extra decimal places. **Character**: stores strings, which are vectors of individual letters, spaces, and punctuation marks. **Logical**: stores `TRUE` and `FALSE` values; these are called Boolean in many other computing languages. **Complex**: holds complex numbers with a real part and an imaginary part (i). **Raw**: holds `0`s and `1`s without any implied meaning.
+R provides six basic data types: **Integer**: stores whole numbers. **Double**: stores floating point numbers. The term "double" is short for double-precision, which means that twice as much memory is allocated to store extra decimal places. **Character**: stores strings, which are vectors of individual letters, spaces, and punctuation marks. **Logical**: stores `TRUE` and `FALSE` values; these are called Boolean in most other programming languages. **Complex**: holds complex numbers with a real part and an imaginary part (i). **Raw**: holds `0`s and `1`s without any implied meaning.
 
 The first four data types are used very commonly, while the last two are rarely needed.
 
@@ -28,12 +28,17 @@ The first four data types are used very commonly, while the last two are rarely 
 
 ```{r}
 # create a data object using the assignment operator
-var_1 <- 3.14159
-var_1
-typeof(var_1)               # returns the data type; a very useful function!
+var_1 <- 3.14159           # assignment is "silent" (no feedback)
+var_1                      # typing a variable name displays its value
 ```
 
-In fact, R will always create a float if you assign a number, even if there is no decimal point. 
+To learn the data type of an object, use the `typeof()` function:
+
+```{r}
+typeof(var_1)               
+```
+
+By default, R will always create a float if you assign a number, even if there is no decimal point. 
 
 ```{r}
 # try to create an integer
@@ -148,9 +153,7 @@ To see the data type of values in your array:
 ```{r}
 typeof(var_20)
 ```
-
-Notice that `typeof()` reports the data type of the individual values, *not* the kind of data structure.
-
+Notice that `typeof()` reports the data type of the individual values, *not* the kind of data structure.   
 To create an array with non-consecutive values, pass a vector of values:
 
 ```{r}
@@ -164,7 +167,7 @@ temp_vector <- c(12,-3,4,82,52.11,61,-3,0,81)
 var_22 <- matrix(temp_vector, nrow=3)
 var_22
 ```
-You can also use the `matrix()` function to create 3- and higher-dimensional arrays That is a topic for another day.
+You can also use the `matix()` function to create 3- and higher-dimensional matrices. That is a topic for another day.
 
 **List.** Because R figures out data type from context, it might be tempting to think that you can use the concatenate function to create a list by passing values of different data types.
 
@@ -198,12 +201,12 @@ The three mammals are at position 2 in the overall list, with "elephant" occupyi
 
 ```{r}
 # first, create vectors for each column
-Name <- c("Abdul", "Bob", "Chen")
+Name <- c("Anika", "Bob", "Chen")
 Age <- c(24, 25, 23)
-IsStudent <- c(TRUE, FALSE, TRUE)
+Student <- c(TRUE, FALSE, TRUE)
 
 # now, create the data frame
-df <- data.frame(Name, Age, IsStudent)     # notice the '.'
+df <- data.frame(Name, Age, Student)     # notice the '.'
 df
 ```
 RStudio provides a nicely formatted table with some useful information: the data type of each column and the total number of rows. (In rendered html some of this nice formatting and information is lost.)
@@ -215,12 +218,12 @@ Before moving on, check the data type of your data frame:
 ```{r}
 typeof(df)
 ```
-In reality, a data frame is not *just* a list, because it has other properties, but fundamentally it is built using the list data structure. 
+A data frame is built using the list data structure, which why R considers it to be a list. However, a data frame has additional properties and rules (e.g., every column be the same length), so R considers it to be a special kind of list. More about this later.
 
 
 ## Indexing data structures
 
-You will often want to access specific values within a data object. This process is called **indexing**. 
+You will often want to access specific values within a data object. This process is called **indexing**.
 
 **Indexing vectors.** First, create a vector to work with. 
 
@@ -273,7 +276,7 @@ To retrieve an entire column or row, omit a value in the first or second positio
 var_20[,3]
 var_20[1:3,3]         # same result
 ```
-This notation may seem confusing, but it is *very* useful when you don't know the length of a row or column; indeed, this capability is essential when you are manipulating data and can't predict dimensions in advance.
+This notation may seem confusing, but it is very useful when you don't know the length of a row or column; indeed, this capability is essential when you are manipulating data and can't predict dimensions in advance.
 
 **Indexing lists -- deferred.** Because items can be nested, indexing lists is a bit more complicated. We will skip lists for now and move on to data frames, the most important data structure in R.
 
@@ -315,7 +318,13 @@ R provides several functions you can use to learn about an object's data and met
 When getting to know a data object, the best place to start is simply to take a look at it. RStudio provides the useful `View()` function. However, this only works within RStudio, so comment it out before running code or rendering to html. 
 
 ```{r}
-#View(penguins)     # note: this only works in RStudio
+#View(penguins)     # note: only works in RStudio!
+```
+
+More useful is the function `head()`, which displays just the first six rows. This is particularly useful with data frames that are too long to fit on the screen.
+
+```{r}
+head(penguins)
 ```
 
 Another useful tool is `str()`:
@@ -375,9 +384,9 @@ Assignment is one of the most common operations in writing code. Your work in R 
 my_var <- 42                # creates a float, not an integer
 my_var <- c("a", 42)        # creates a character vector, not a list
 my_var <- "TRUE"            # creates a character vector, not a logical vector
-my_var <- c(FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, "TRUE") # same!
+my_var <- c(FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, "TRUE")      # same!
 ```
-R will not give you a warning or throw an error in any of these cases. It's good to check values after assignment to make sure they are what you want, particularly while you're becoming familiar with R.
+R will not give you a warning or throw an error in any of these cases. It's good to check data type and values after assignment to make sure they are what you want, particularly while you're becoming familiar with R.
 
 **2. Assignment recycles or drops values if dimensions do not match.** We saw an example of recycling earlier:
 
@@ -507,7 +516,7 @@ There are several `NA` values in the `penguins` data frame. If we leave them the
 mean(penguins$bill_depth_mm)
 ```
 
-In general, if there are *any* `NA` values in a column, a calculation on that column will return `NA`. This can quickly become annoying. (Note: `tidyverse` functions are an important exception; most simply ignore `NA` values.)
+In general, if there are *any* `NA` values in a column, a calculation on that column will return `NA`. This can quickly become annoying. (Note: `tidyverse` functions are an important exception; most ignore `NA` values and give you a warning.)
 
 Use the optional argument `na.rm = TRUE` to request R to ignore `NA` values. (`na.rm` is short for "NA remove".)
 
@@ -522,11 +531,48 @@ sum(is.na(penguins$body_mass_g))         # count of NA values for a single colum
 which(is.na(penguins$body_mass_g))       # position of NAs for a single column
 colSums(is.na(penguins))                 # count of NA values for all columns
 ```
-The following command creates a logical vector with `TRUE` at every position where a column contains an `NA` value, and `FALSE` everywhere else. This can be very useful for filtering data, as we will see later. 
+The following command creates a logical vector with `TRUE` at every position where a column contains an `NA` value, and `FALSE` everywhere else. This can be very useful for filtering data, as we will see in the following section. 
 
 ```{r}
 is.na(penguins$body_mass_g)              # returns a logical vector with NAs TRUE
 ```
+
+## Boolean indexing
+
+Vectors and lists can be filtered using "Boolean indexing". This involves two steps. First, construct a vector of truth values. Typically, this is done using a condition that you specify. Second, apply this Boolean index to either a vector or a column from a data frame. Where the indexing vector contains a value of `TRUE`, the corresponding value in the object you want to filter is returned. Importantly, the lengths of the Boolean index and the vector or column being filtered must match.
+
+This is easiest to see using a simple vector:
+
+```{r}
+# here is a vector I want to filter
+x <- c(1, 2, 3, 4, 5, 6)
+
+# first, construct the boolean index (here by hand, but normally by condition)
+my_bool_vect <- c(TRUE, FALSE, FALSE, TRUE, TRUE, FALSE)
+
+# second, apply the boolean index to the filter using square bracket indexing
+x[my_bool_vect]
+```
+
+Only the values of `x` that match up with `TRUE` values in the Boolean index are returned.
+
+For a more realistic example, consider finding missing values, as we did in the previous section: `is.na(penguins$body_mass_g)`
+This line of code returns a vector of logical values, based on a condition. In this case, the condition is whether there is missing data. 
+
+However, any condition can be used to create a vector of logical values. For instance, we can create a Boolean index for large penguins:
+
+```{r}
+my_bool_vec <- penguins$body_mass_g > 3600
+my_bool_vec
+```
+
+We can now use this vector of logical values to filter for rows where penguins weigh more than 3,600 g by passing it to the row value of square bracket indexing.
+
+```{r}
+penguins[my_bool_vec, ]
+```
+
+It works, but this is a two-step process that could be done more efficiently in one step. So why would we want to use Boolean indexing? The short answer is that filtering with a Boolean vector is computationally very efficient. If you want to use a filter repeatedly, you only need to construct the Boolean vector once, saving time and keeping code simpler. We will see examples later on.   
 
 
 ## Vectorized operations
@@ -556,3 +602,4 @@ names(penguins)
 interesting_ratio <- penguins$bill_length_mm / penguins$flipper_length_mm
 head(interesting_ratio)                  
 ```
+
