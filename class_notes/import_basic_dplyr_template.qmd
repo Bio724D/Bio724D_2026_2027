@@ -1,5 +1,5 @@
 ---
-title: "Data import and simple data frame manipulation"
+title: "An introduction to data frame manipulation using the Tidyverse"
 date-format: iso
 execute:
   eval: true
@@ -8,7 +8,416 @@ format:
     embed-resources: true
 ---
 
-# Data and libraries
+
+## Libraries
+
+```{r}
+#| output: false
+library(tidyverse)
+```
+
+
+
+## Lists
+
+Lists are the most flexible built-in data structure in R.
+
+-   Unlike vectors and data frames which have constraints on what they contain and the size of the respective elements, lists can contain arbitrary objects of any type and size (even other lists)
+
+```{r}
+#| output: false
+#| 
+bob <- list('Bob', 16, 27707)
+bob
+
+selena <- list('Selena', 'Montgomery', 17, 91324)
+selena
+
+people <- list(bob, selena)
+people
+```
+
+## List elements can have names
+
+```{r}
+bob <- list(first_name="Bob",
+            last_name="Gimli",
+            age=16, 
+            zip=27707)
+```
+
+The names of list elements can be accessed with the `names()` function similar to the columns in a data frame
+
+```{r}
+#| output: false
+names(bob)
+```
+
+## Indexing Lists
+
+-   Single brackets always **return a list** containing the element at index `i`
+
+```{r}
+#| output: false
+bob[1]
+typeof(bob[1])
+```
+
+- Index ranges can be used to return multiple elements of a list when using single bracket indexing
+
+```{r}
+#| output: false
+bob[2:4]
+```
+
+-   Use double brackets (`[[]]`) to return the actual element at index `i`. IMPORTANT: make sure you understand how this is different fromwhat's returned by single bracket indexing of a list.
+
+```{r}
+#| output: false
+bob[[1]]
+typeof(bob[[1]])
+```
+
+-   If the list has named objects they can be accessed via the `$` operator
+
+```{r}
+#| output: false
+bob$last_name
+```
+
+-   String indexing also works with lists
+
+```{r}
+#| output: false
+bob[c("last_name", "first_name")]
+```
+
+Question: What happens when you index with an integer index or a name that doesn't exist?
+
+```{r}
+#| eval: false
+#| output: false
+# try these
+bob$middle_name
+bob[99]
+bob[[99]]
+```
+
+
+
+## Functions often return lists
+
+Many R functions that need to return multiple values of different types will return lists (or things that act like lists).
+
+### Example
+
+```{r}
+#| eval: false
+#| output: false
+# draws a histogram but also return a list object
+# with useful information about what was drawn
+h <- hist(rnorm(100)) 
+```
+
+```{r}
+#| eval: false
+#| collapse: true
+names(h)
+
+# get break points for each bin and respective counts
+h$breaks
+h$counts
+```
+
+
+
+
+## Base R vs The Tidyverse
+
+The [Tidyverse](https://www.tidyverse.org/) is a "meta-package" of useful libraries designed with similar interfaces  working with data. Key libraries in the Tidyverse include ggplot2, dplyr, readr, tidyr, and others. We're emphasizing the use of Tidyverse packages in this class because they provide a consistent and relatively intuitive approach for working with data.  
+
+
+In some cases Tidyverse packages provide similar functionality to base R functions, but with slightly different names and different behaviors. For example `read_csv` (from readr) and `read.csv` (a base R package) both read CSVs but have different arguments and different default behaviors.  Usually, the output of these two functions will be similar but there are some gotchas lurking if you substitute one for the other.  Neither one is necessarily better than the other, but it's good to be aware of which one you're using.
+
+
+# Data frame manipulation using dplyr
+
+The package `dplyr` provides a "grammar of data manipulation" (note ggplot is a "grammar of graphics"; there's a trend here!)
+
+Some Basic "verbs" of dplyr (we'll see more next lecture):
+
+* `select` -- get specific columns
+* `mutate` -- create new columns
+* `filter` -- get specific rows
+* `arrange` -- order rows
+
+## Data for examples
+
+As we did last week, we'll use the Palmer data set for illustration purposes:
+
+```{r}
+#| eval: true
+#| output: false
+penguins <- read_csv("~/Bio724/penguins.csv")
+```
+
+Alternately, install the package "palmerpenguins" and then load it as follows:
+
+```{r}
+#| eval: false
+library(palmerpenguins)
+```
+
+
+
+## Selecting columns using `dplyr::select` 
+
+`select` subsets columns
+
+### positive and negative selection
+
+```{r}
+#| output: false
+# get only species and "bill" columns from penguin data 
+penguins |>
+  select(species, bill_length_mm, bill_depth_mm) |>
+  head()
+```
+
+```{r}
+#| output: false
+# get everything except "bill" columns from penguins
+penguins |>
+  select(!bill_length_mm, !bill_depth_mm) |>
+  head()
+```
+
+
+### selecting on types
+
+The `where` helper function in conjunction with `select` can be use to form predicate statements:
+
+```{r}
+#| output: false
+# get numeric columns from penguin data
+penguins |>
+  select(where(is.numeric)) |>
+  head()
+```
+
+
+### selecting on string matches 
+
+The `matches` function can be used to match column names by string matching:
+
+```{r}
+#| output: false
+# get all the "length" columns from penguins
+penguins |>
+  select(matches("length")) |>
+  head()
+```
+
+
+We'll cover more details about string matching and searching in a later lecture.
+
+
+## Selecting rows using `dplyr::filter` 
+
+`filter` subsets rows.
+
+### Filter on positive and negative matches
+
+```{r}
+#| output: false
+# get only the rows representing Gentoo penguins
+penguins |>
+  filter(species == "Gentoo")
+```
+
+
+```{r}
+#| output: false
+# exclude the rows that are Gentoo penguins
+penguins |>
+  filter(species != "Gentoo")
+```
+
+Note the parallels to Boolean indexing.
+
+
+### Multiple filters are "ands"
+
+
+```{r}
+#| output: false
+# get the Gentoo penguins bigger than 4.5 kg
+penguins |>
+  filter(species == "Gentoo", body_mass_g > 4500)
+```
+
+
+```{r}
+#| output: false
+# This will return an empty table because multiple arguments to filter 
+# are treated as AND; in this data, no penguin is both a "Gentoo" and an "Adelie" penguin
+penguins |>
+  filter(species == "Gentoo", species == "Adelie" )
+
+```
+
+### More complex filters using and (&), or (|), and %in% 
+
+```{r}
+#| output: false
+# get both Gentoo and Adelie penguins using the OR operator
+penguins |>
+  filter(species == "Gentoo" | species == "Adelie" )
+```
+
+### %in% allows you to filter on sets
+
+```{r}
+#| output: false
+# Get Gentoo and Adelie penguins using the %in% operator
+penguins |>
+  filter(species %in% c("Gentoo","Adelie") )
+```
+
+## Selecting rows using slices
+
+The `dplyr::slice_` functions let you index rows by their index locations as illustrated below.  This is approximately equivalent to base R bracket indexing but is more friendly to piping.
+
+### `dplyr::slice()` for integer and integer range indexing
+
+```{r}
+#| output: false
+# Get specific element or a range of elements
+penguins |>
+  slice(10)
+
+penguins |>
+  slice(10:20)
+
+# get rows from 5 until the last element
+penguins |>
+  slice(5:n())
+
+# slicing with negatives indices drops rows
+penguins |>
+  slice(-c(2,4,6))
+
+# what does this do?
+penguins |> 
+  slice(-(5:(n()-5)))
+```
+
+### head and tail slicing
+
+```{r}
+#| output: false
+# get first six rows
+penguins |>
+  slice_head(n=6)
+
+# get last 10 rows
+penguins |>
+  slice_tail(n=10)
+
+# get a random sample of rows
+penguins |>
+  slice_sample(n = 10)
+```
+
+```{r}
+# look up the help for the following:
+# slice_min, slice_max
+```
+
+
+
+### Filtering on missing data and complete cases
+
+```{r}
+#| output: false
+# find rows where body_mass_g has NA values
+penguins |>
+  filter(is.na(body_mass_g))
+```
+
+
+```{r}
+#| output: false
+# get all rows where body_mass data is NOT missing
+penguins |>
+  filter(!is.na(body_mass_g))
+```
+
+
+Dropping missing values is so common that there is a specific function for this in the Tidyverse package `tidyr`, called `drop_na`:
+
+```{r}
+#| output: false
+# drop any rows where body_mass_g is missing using drop_na
+penguins |>
+  drop_na(body_mass_g)
+```
+
+When you don't pass one or more column names to `drop_na` it only returns rows where there are no missing values anywhere:
+
+```{r}
+#| output: false
+# drop rows where any variable has an NA value
+penguins |>
+  drop_na()
+```
+
+
+
+
+# Sorting data using `arrange`
+
+Arrange sorts a data frame on the column(s) you specify:
+
+```{r}
+#| output: false
+# sort penguins by bill_length_mm
+penguins |>
+  arrange(bill_length_mm)
+```
+
+By default, the data are arrange in ascending order (smallest to biggest). To sort in descending order use the`desc` helper function:
+```{r}
+#| output: false
+# sort penguins by bill_length_mm from biggest to smallest
+penguins |>
+  arrange(desc(bill_length_mm))
+```
+
+`arrange` can be used with multiple columns to break ties:
+
+```{r}
+#| output: false
+# sort penguins by flipper_length and then by bill_length
+penguins |>
+  arrange(flipper_length_mm, bill_length_mm)
+```
+
+
+
+## Creating derived column `dplyr::mutate`
+
+`mutate` can be used to derived or new columns:
+
+```{r}
+# create a derived column, body_mass_kg, in penguins
+penguins |>
+  mutate(body_mass_kg = body_mass_g / 1000) |>
+  head()
+```
+
+
+## Data import
 
 ### Data
 
@@ -22,21 +431,6 @@ Download the following files to your `~/Bio724` directory. These are direct link
 [^1]: Spellman PT, Sherlock G, Zhang MQ, Iyer VR, Anders K, Eisen MB, Brown PO, Botstein D, Futcher B. Comprehensive identification of cell cycle-regulated genes of the yeast Saccharomyces cerevisiae by microarray hybridization. Mol Biol Cell. 1998 Dec;9(12):3273-97. doi: 10.1091/mbc.9.12.3273. PMID: 9843569; PMCID: PMC25624.
 
 [^2]: Nagalakshmi U, Wang Z, Waern K, Shou C, Raha D, Gerstein M, Snyder M. The transcriptional landscape of the yeast genome defined by RNA sequencing. Science. 2008 Jun 6;320(5881):1344-9. doi: 10.1126/science.1158441. Epub 2008 May 1. PMID: 18451266; PMCID: PMC2951732.
-
-
-### Libraries
-
-```{r}
-#| output: false
-library(tidyverse)
-```
-
-# Base R vs The Tidyverse
-
-The [Tidyverse](https://www.tidyverse.org/) is a "meta-package" of useful libraries designed with similar interfaces  working with data. Key libraries in the Tidyverse include ggplot2, dplyr, readr, tidyr, and others. We're emphasizing the use of Tidyverse packages in this class because they provide a consistent and relatively intuitive approach for working with data.  
-
-
-In some cases Tidyverse packages provide similar functionality to base R functions, but with slightly different names and different behaviors. For example `read_csv` (from readr) and `read.csv` (a base R package) both read CSVs but have different arguments and different default behaviors.  Usually, the output of these two functions will be similar but there are some gotchas lurking if you substitute one for the other.  Neither one is necessarily better than the other, but it's good to be aware of which one you're using.
 
 
 # Data import
@@ -59,7 +453,7 @@ Look at help for `read_csv` / `read_tsv` / `read_delim`:
 
 ### Load a well formed CSV file
 
-You've already seen how to import a "well formed" CSV file:
+You've already seen how to import a "well formed" CSV file using the `readr::read_csv` function.
 
 ```{r}
 penguins <- read_csv("~/Bio724/penguins.csv")
@@ -70,11 +464,13 @@ penguins <- read_csv("~/Bio724/penguins.csv")
 ### Load a fairly well formed TSV file
 
 
-The next  file, `spellman-1998-expression.tsv` is a TSV file, that is "mostly" well formed:
+The next  file, `spellman-1998-expression.tsv` is a tab-separate values (TSV) file, that is "mostly" well formed:
 
 ```{r}
-# read spellman TSV data
-
+#| eval: false
+#| output: false
+# read spellman TSV data using the readr::read_tsv function
+spellman <- read_tsv("~/Bio724/spellman-1998-expression.tsv")
 ```
 
 
@@ -84,47 +480,46 @@ The next  file, `spellman-1998-expression.tsv` is a TSV file, that is "mostly" w
 
 
 
-#### Loading only a subset of columns
+### Loading only a subset of columns
 
 You can read only a subset of columns using the `col_select` argument to the `read_` functions:
 
+
 ```{r}
 # read first six columns of data file
-
+spellman_6 <- read_tsv("~/Bio724/spellman-1998-expression.tsv",
+                       col_select = 1:6)
 ```
 
+```{r}
+head(spellman_6)
+```
 
+You can also load subsets of columns using a syntax similar to the `dplyr::select` function:
 
-### Loading a file with a non-standard encoding
+```{r}
+#| eval: false
 
-ASCII and unicode encoded files are the most common file types you're likely to work with, but you may encounter files with unusual encodings. For example the file [`cryptococcus_tecan_run.txt`]() is a TSV file produced by an instrument in my lab.  One of the data columns includes a degree Celsius symbol, and the file is encoded in a legacy format called ["windows-1252" encoding](https://en.wikipedia.org/wiki/Windows-1252).
+# read first six columns of data file
+spellman_alpha<- read_tsv("~/Bio724/spellman-1998-expression.tsv",
+                       col_select = c(1, starts_with("alpha")))
 
-```{r, error=TRUE}
+head(spellman_alpha)
+```
+
+### renaming columns after import
+
+The `dplyr::rename` function provides a convenient syntax for renaming columns.
+
+Rename the first column of the Spellman data frame to "ID":
+
+```{r}
+#| eval: false
 #| output: false
-# this will generate an error
-tecan <- read_tsv("~/Bio724/cryptococcus_tecan_run.txt")
+# rename spellman first column to "ID"
+# format for rename is NewName = OldName
+spellman <- rename(spellman, ID = ...1)
 ```
-
-We can use the `locale` argument to `read_tsv` to specify the encoding (assuming we know what it is):
-
-```{r}
-# fix the error by specifying the correct encoding using the local argument
-# also tell read_tsv there are no col_names
-
-tecan <- read_tsv("~/Bio724/cryptococcus_tecan_run.txt",
-                  locale = locale(encoding = "windows-1252"),
-                  col_names = FALSE)
-
-```
-
-There are still some problems with our data file (see the warning above). If we follow the instructions to use the `problems` function on our data frame, we'll get some additional info about what R sees as wrong with our data import:
-
-```{r}
-problems(tecan)
-```
-
-If you go back and look at the raw data file, you'll see that the last two lines of the file have some accessory information about the instrument run. These are not properly formatted data rows. We'll see how to deal with these issues below.
-
 
 ## Reading excel files with `readxl`
 
@@ -153,223 +548,45 @@ library(readxl)
 See class demo of the "Import Dataset" button in RStudio.
 
 
-## renaming columns after import
-
-
-The `rename` function provides a convenient syntax for renaming columns.
-
-Rename the first column of the Spellman data frame to "ID":
-
-```{r}
-# rename spellman first column to "ID"
-```
 
 
 
+## Loading a file with a non-standard encoding
 
-# Data frame manipulation using dplyr
+ASCII and unicode encoded files are the most common file types you're likely to work with, but you may encounter files with unusual encodings. For example the file [`cryptococcus_tecan_run.txt`]() is a TSV file produced by an instrument in my lab.  One of the data columns includes a degree Celsius symbol, and the file is encoded in a legacy format called ["windows-1252" encoding](https://en.wikipedia.org/wiki/Windows-1252).
 
-The package `dplyr` provides a "grammar of data manipulation" (note ggplot is a "grammar of graphics"; there's a trend here!)
-
-Some Basic "verbs" of dplyr (we'll see more next lecture):
-
-* `select` -- get specific columns
-* `mutate` -- create new columns
-* `filter` -- get specific rows
-* `arrange` -- order rows
-
-
-## `select` 
-
-`select` subsets columns
-
-### positive and negative selection
-
-```{r}
-# get only species and "bill" columns from penguin data 
-```
-
-```{r}
-# get everything except "bill" columns from penguins
-```
-
-
-### selecting on types
-
-The `where` helper function in conjunction with `select` can be use to form predicate statements:
-
-```{r}
-# get numeric columns from penguin data
-```
-
-
-### selecting on string matches 
-
-The `matches` function can be used to match column names by string matching:
-
-```{r}
-# get all the "length" columns from penguins
-```
-
-
-We'll cover more details about string matching and searching in a later lecture.
-
-
-
-
-## `mutate`
-
-`mutate` can be used to create derived or new columns:
-
-```{r}
-# create a derived column, body_mass_kg, in penguins
-
-```
-
-
-
-## `filter` examples
-
-`filter` subsets rows.
-
-### Filter on positive and negative matches
-
-```{r}
-# get only the rows representing Gentoo penguins
-
-```
-
-
-```{r}
-# exclude the rows that are Gentoo penguins
-
-```
-
-
-
-### Multiple filters are "ands"
-
-
-```{r}
-# get the Gentoo penguins bigger than 4.5 kg
-```
-
-
-```{r}
+```{r, error=TRUE}
+#| eval: false
 #| output: false
-# This will return an empty table because multiple arguments to filter 
-# are treated as AND; in this data, no penguin is both a "Gentoo" and an "Adelie" penguin
-penguins |>
-  filter(species == "Gentoo", species == "Adelie" )
-
+# this will generate an error
+tecan <- read_tsv("~/Bio724/cryptococcus_tecan_run.txt")
 ```
 
-### More complex filters using and (&), or (|), and %in% 
+We can use the `locale` argument to `read_tsv` to specify the encoding (assuming we know what it is):
 
 ```{r}
-# get both Gentoo and Adelie penguins using the OR operator
+#| eval: false
+#| output: false
+# fix the error by specifying the correct encoding using the local argument
+# also tell read_tsv there are no col_names
+
+tecan <- read_tsv("~/Bio724/cryptococcus_tecan_run.txt",
+                  locale = locale(encoding = "windows-1252"),
+                  col_names = FALSE)
+
 ```
 
-### %in% allows you to filter  on sets
+There are still some problems with our data file (see the warning above). If we follow the instructions to use the `problems` function on our data frame, we'll get some additional info about what R sees as wrong with our data import:
 
 ```{r}
-# Get Gentoo and Adelie penguins using the %in% operator
+#| eval: false
+#| output: false
+problems(tecan)
 ```
 
+If you go back and look at the raw data file, you'll see that the last two lines of the file have some accessory information about the instrument run. These are not properly formatted data rows. 
 
 
-### Filtering on missing data and complete cases
-
-```{r}
-# find rows where body_mass_g has NA values
-```
-
-
-```{r}
-# get all rows where body_mass data is NOT missing
-```
-
-
-Dropping missing values is so common that there is a specific function for this in the Tidyverse package `tidyr`, called `drop_na`:
-
-```{r}
-# drop any rows where body_mass_g is missing using drop_na
-```
-
-When you don't pass one or more column names to `drop_na` it only returns rows where there are no missing values anywhere:
-
-```{r}
-# drop rows where any variable has an NA value
-```
-
-# Sorting data using `arrange`
-
-Arrange sorts a data frame on the column(s) you specify:
-
-```{r}
-# sort penguins by bill_length_mm
-```
-
-By default, the data are arrange in ascending order (smallest to biggest). To sort in descending order use the`desc` helper function:
-```{r}
-# sort penguins by bill_length_mm from biggest to smallest
-penguins |>
-  arrange(desc(bill_length_mm))
-```
-
-`arrange` can be used with multiple columns to break ties:
-
-```{r}
-# sort penguins by flipper_length and  bill_length
-```
-
-
-
-# Base R indexing for column and row subsetting
-
-So far we've been looking at subsetting rows and columns using dplyr functions. 
-
-It's good to know some of the base R syntax for working with columns and rows. The act of specifying particular regions of a data structure is called "indexing".  When dealing with a tabular data structure, we need to index both rows and columns.
-
-
-```{r}
-penguins[1, 1]  # row 1, col 1
-```
-
-```{r}
-penguins[1:5, 1:3]  # rows 1 to 5, columns 1 to 3
-```
-
-Columns are taken to represent variables in R data frames.  If we don't specify rows, R assumes we're working with columns:
-
-```{r}
-penguins[1:4]
-```
-
-We can index columns using vector of strings like so:
-
-```{r}
-penguins[c("species", "island", "body_mass_g", "sex")]
-```
-
-
-
-## Column indexing using `$` operator
-
-Note that everything up to now has returned a new data frame; the `$` operator returns a vector instead of a data frame.
-
-
-```{r}
-penguins$body_mass_g |>
-  head(50)
-```
-
-Compare the above to:
-
-```{r}
-penguins[c("body_mass_g")] |>
-  head(50)
-```
 
 
 

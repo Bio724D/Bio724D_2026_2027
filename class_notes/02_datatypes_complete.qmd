@@ -164,7 +164,7 @@ temp_vector <- c(12,-3,4,82,52.11,61,-3,0,81)
 var_22 <- matrix(temp_vector, nrow=3)
 var_22
 ```
-You can also use the `matix()` function to create 3- and higher-dimensional matrices. That is a topic for another day.
+You can also use the `matrix()` function to create 3- and higher-dimensional arrays That is a topic for another day.
 
 **List.** Because R figures out data type from context, it might be tempting to think that you can use the concatenate function to create a list by passing values of different data types.
 
