@@ -20,77 +20,263 @@ penguins <- read_csv("penguins.csv")
 
 ## Basic data types
 
-R provides six basic data types: **Integer**: stores whole numbers. **Double**: stores floating point numbers. The term "double" is short for double-precision, which means that twice as much memory is allocated to store extra decimal places. **Character**: stores strings, which are vectors of individual letters, spaces, and punctuation marks. **Logical**: stores `TRUE` and `FALSE` values; these are called Boolean in many other computing languages. **Complex**: holds complex numbers with a real part and an imaginary part (i). **Raw**: holds `0`s and `1`s without any implied meaning.
+R provides six basic data types: **Integer**: stores whole numbers. **Double**: stores floating point numbers. The term "double" is short for double-precision, which means that twice as much memory is allocated to store extra decimal places. **Character**: stores strings, which are vectors of individual letters, spaces, and punctuation marks. **Logical**: stores `TRUE` and `FALSE` values; these are called Boolean in most other programming languages. **Complex**: holds complex numbers with a real part and an imaginary part (i). **Raw**: holds `0`s and `1`s without any implied meaning.
 
 The first four data types are used very commonly, while the last two are rarely needed.
 
-**Creating basic data objects.** 
+**Creating basic data objects.** The simplest way to create a data object is with the assignment operator. R makes assumptions about the data type you want based on the values you provide. For instance, if you assign numerals with a decimal point, R will assume you want a double data type.
 
 ```{r}
-
+# create a data object using the assignment operator
 
 ```
 
+To learn the data type of an object, use the `typeof()` function:
+
+```{r}
+
+```
+
+By default, R will always create a float if you assign a number, even if there is no decimal point. 
+
+```{r}
+# try to create an integer
+
+```
+
+You can force R to create an integer by adding an upper-case L immediately after the numeral(s) that you assign. 
+
+```{r}
+#| echo: true
+# force R to make an integer
+
+```
+
+To create a character data object, enclose values in quotes. You can use either either single or double quotes, but they must match. 
+
+```{r}
+# create strings
+
+```
+Notice that the output of a string is surrounded by double quotes so that you can distinguish numerals that are part of a string from a numeric value (integer or double). 
+
+Using single or double quotes allows you to include double or single quotes within a string, respectively.
+
+```{r}
+
+```
+To show you when quotes are part of the string, R uses the back-slash character `\` to indicate that the character that follows immediately should be taken literally.  
+
+To create a logical data type, assign either TRUE or FALSE without quotes.
+
+```{r}
+
+```
+Note that the output value is *not* enclosed in quotes so that you can distinguish the logical value `TRUE` from the string value `"TRUE"`.
 
 **Basic data types are vectors.** Most programming languages have **atomic** data types, which are single values of a particular type, such as an integer or a string. R is unusual in that there are no true atomic data types; instead, the most basic data types are **vectors**: sequences of values of the same type.
 
-```{r}
+In the examples above, we created vectors of length 1. The simplest way to create a longer vector is to use the `c()` function function during assignment (c is short for concatenate or combine).
 
+```{r}
 
 ```
 
+You can also use `c` to create longer vectors: 
+
+```{r}
+var_10 <- c(var_10, "i", "j")
+var_10
+new_data <- c("x", "y", "z")
+var_10 <- c(var_10, new_data)
+var_10
+```
+
+The same approaches work for numeric and logical values:
+
+```{r}
+var_11 <- c(33, 22, 11)
+var_11
+typeof(var_11)
+var_12 <- c(FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
+var_12
+typeof(var_12) 
+length(var_12)
+```
 
 ## Data structures
 
-Most programming languages provide ways to organize information into packages that make working with data easier and safer. These packages are called **data structures**. Examples include vectors and data frames. Behind the scenes, R organizes your data in a way that speeds up calculations and minimizes memory usage, while retaining the ability to present values back to you in human-readable form. A data structure also contains rules that govern what kinds of operations are allowed. If you try to break one of those rules, R will give you an error message.  
+Most programming languages provide ways to organize information into packages that make working with data easier and safer. These packages are called **data structures**. Examples include vectors and data frames. Behind the scenes, R organizes your data in a way that speeds up calculations and minimizes memory usage, while retaining the ability to present values back to you in human-readable form. A data structure also contains rules that govern what kinds of operations are allowed. If you break one of those rules, R will give you an error message.  
 
 R provides several fundamental data structures. A **vector** is the simplest: as mentioned earlier, it contains a series of values of a single data type. An **array** is similar but extends values in two dimensions, while a **matrix** holds values of a single type in three or more dimensions. A **list** is a 1-dimensional data structure that can hold values of different types and even other data structures. A **data frame** is a table with multiple, equal-length columns, each of which can be a different data type but each containing only one data type.   
 
-**Array.** 
+Learning how to create, query, and modify each of these fundamental data structures is a core competency for working in R. We have already constructed several vectors; we'll now work with the other basic data structures.  
+
+**Array.** The simplest way to create an array is to use the `matrix()` generator function. We need to pass two kinds of information in order: the values and the dimensions of the array. To create the contents of the array, we will use a handy operator `:` which fills in intermediate values. Because this is a 2-dimensional array, and the number of values is known, we only need to specify one dimension. We do that using the `nrow` argument.
 
 ```{r}
 
-
 ```
+Notice that R returns the array with "coordinates" in square brackets. The commas remind you that R assigns coordinates as: row, column. 
 
-**List.** 
 
 ```{r}
 
-
 ```
+Notice that `length()` returns the total number of items, *not* the dimensions of the array. 
 
-**Data Frame.** 
+Try changing `nrow` to 4 and to 10. What happens in each case? 
+
+By default, R uses **recycling** to fill a data structure if you don't provide enough values. This may not be what you want! R sends you a warning, but your code will continue to execute and this may alter other variables.
+
+To see the data type of values in your array:
 
 ```{r}
 
+```
+Notice that `typeof()` reports the data type of the individual values, *not* the kind of data structure.   
+To create an array with non-consecutive values, pass a vector of values:
+
+```{r}
+var_21 <- matrix(c(12,-3,4,82,52.11,61,-3,0,81), nrow=3)
 
 ```
+Here we are nesting a function inside another function. This can get confusing to read, particularly if the nested function is complicated. To make your code easier to read and edit, assign an intermediate variable.
+
+```{r}
+
+```
+You can also use the `matix()` function to create 3- and higher-dimensional matrices. That is a topic for another day.
+
+**List.** Because R figures out data type from context, it might be tempting to think that you can use the concatenate function to create a list by passing values of different data types.
+
+```{r}
+var_23 <- c(FALSE, "elephant", 3.14159)   
+                         
+```
+However, this doesn't give us a list. Instead, R converts all the values to the most generalized data type, in this case character, and then puts them into a vector.
+
+To create a list, use the `list()` generator function. This will always create a list, even if you pass values that are all of the same data type (try it!).
+
+```{r}
+
+```
+Now we have a list!
+
+Notice that the output is more complicated than we saw earlier for vectors. The reason is that lists can contain other data structures. For example, a list can contain other lists. This called **nesting** or **recursion**. When you ask to see the contents of a list, R first indicates the position in the overall list and then the position within that item. Since our list is not nested, there is only one value at each position. 
+
+One way to create a nested list is to use `c()` to pass a vector:
+
+```{r}
+
+```
+The three mammals are at position 2 in the overall list, with "elephant" occupying position 1 within the vector at that position. Pro tip: this is fundamentally how a data frame is constructed, as a list of vectors.  
+
+**Data Frame.** This brings us to the most common data structure in data science, the data frame. To create a data frame from scratch, use the `data.frame()` constructor function. We will use a very common convention, and name our new data frame `df`.
+
+```{r}
+# first, create vectors for each column
+Name <- c("Anika", "Bob", "Chen")
+Age <- c(24, 25, 23)
+Student <- c(TRUE, FALSE, TRUE)
+
+# now, create the data frame
+df <- data.frame(Name, Age, Student)     # notice the '.'
+df
+```
+RStudio provides a nicely formatted table with some useful information: the data type of each column and the total number of rows. (In rendered html some of this nice formatting and information is lost.)
+
+Notice that `data.frame()` by default uses variable names to create column names. This is just one example of why it is helpful to use informative variable names.
+
+Before moving on, check the data type of your data frame:
+
+```{r}
+
+```
+A data frame is built using the list data structure, which why R considers it to be a list. However, a data frame has additional properties and rules (e.g., every column be the same length), so R considers it to be a special kind of list. More about this later.
 
 
 ## Indexing data structures
 
-You will often want to access specific values within a data object. This process is called **indexing**. 
+You will often want to access specific values within a data object. This process is called **indexing**.
 
-**Indexing vectors.** 
+**Indexing vectors.** First, create a vector to work with. 
 
 ```{r}
 
+```
+Notice that R provides the position of the first value on each line in square brackets when it returns values. This helps you know where specific values are located in a long vector. 
+
+To index a vector, indicate the position or positions inside square brackets:
+```{r}
+
+```
+This is called **square bracket indexing**, and it is by far the most common way to index a vector.
+
+To index a range of values, use the `:` operator inside the square brackets. The following retrieves values from positions 3 through 6:
+
+```{r}
 
 ```
 
-**Indexing arrays.** 
+Ranges can be in decreasing order:
 
 ```{r}
-
 
 ```
 
-**Indexing data frames.** 
+**Indexing arrays.** To index an array, provide two values: row and column. First, re-create the array we made earlier:
+
+```{r}
+var_20 <- matrix(1:24, nrow=3)   
+var_20
+```
+
+Retrieve one value:
 
 ```{r}
 
+```
 
+Ranges also work:
+
+```{r}
+
+```
+
+To retrieve an entire column or row, omit a value in the first or second position, respectively, and provide the number of the column or row you want in the other position. For instance, to retrieve the third column:
+
+```{r}
+
+```
+This notation may seem confusing, but it is very useful when you don't know the length of a row or column; indeed, this capability is essential when you are manipulating data and can't predict dimensions in advance.
+
+**Indexing lists -- deferred.** Because items can be nested, indexing lists is a bit more complicated. We will skip lists for now and move on to data frames, the most important data structure in R.
+
+**Indexing data frames.** To index a data frame, you can again use square bracket indexing. As with an array, pass two values corresponding to row and column:
+
+```{r}
+
+```
+
+The other conventions we used with arrays also work. For instance, to retrieve values from the second column:
+
+```{r}
+
+```
+
+R also supports **dollar sign indexing**, a more readable and safer way to index data frames. It works by appending the column name to the data frame name using `$`:
+
+```{r}
+
+```
+Why do you think this is a safer way to retrieve values?
+
+You can also mix the two methods of indexing to extract specific items:
+
+```{r}
+penguins$sex[3]
+penguins$sex[5:8]
 ```
 
 
@@ -98,49 +284,142 @@ You will often want to access specific values within a data object. This process
 
 In R, there is no such thing as "just" data; values are always stored with additional information, called **metadata** or **attributes**. Data and its associated metadata are stored together in memory in a package called a **data object**.
 
+We've already seen two kinds of metadata: data type and length. Every data object in R has these two fundamental attributes. Depending on the kind of data structure, other attributes may also be stored with it, such as the dimensions of an array or the column names of a data frame. 
+
+R provides several functions you can use to learn about an object's data and metadata. These are helpful when manipulating your own data and when learning about data you get from somewhere else.   
+
+When getting to know a data object, the best place to start is simply to take a look at it. RStudio provides the useful `View()` function. However, this only works within RStudio, so comment it out before running code or rendering to html. 
+
+```{r}
+#View(penguins)     # note: only works in RStudio!
+```
+
+More useful is the function `head()`, which displays just the first six rows. This is particularly useful with data frames that are too long to fit on the screen.
+
 ```{r}
 
+```
+
+Another useful tool is `str()`:
+
+```{r}
 
 ```
+You can get exactly the same information by clicking on the arrow button for any data object in the environment panel.
+
+Use `typeof()` and `length()` to query the two standard attributes: 
+
+```{r}
+
+```
+
+Remember that `length()` returns the total number of items. This can be confusing. If you ask for the length of a data frame, `length()` will return the number of columns. (Remember, a data frame is a list, and the number of columns is the length of the list!). If you pass a column of a data frame, `length()` will return the number of rows.
+
+```{r}
+
+```
+
+Earlier, we noted that the data type of a data frame is list. However, a data frame is more than a list; it has additional attributes and rules that extend the functionality of a list. This kind of extension is called a **class**. R provides the `class()` function to learn what kind of data structure you are working with:
+```{r}
+
+```
+This tells us that the `data.frame` class is actually an extension of the `tbl_df` class, and that is an extension of the `tbl` class, etc. These details don't matter for now; the important concept is that it is possible to construct specialized data structures from simpler components.   
+
+To learn about the shape, or dimensions of an array, matrix, or data frame, use the `dim()` function:
+
+```{r}
+
+```
+`dim()` returns the number of rows and columns in that order.
+
+To get a list of column and row names from a data frame: 
+
+```{r}
+
+```
+Using `row.names()` seems pointless here. However, R allows you to optionally assign character labels to rows, in which case this function becomes useful. 
 
 
 ## Assignment
 
 Assignment is one of the most common operations in writing code. Your work in R will go more smoothly if you keep in mind the following basic concepts about assignment.
 
-**1. Data type is inferred during assignment.** 
+**1. Data type is inferred during assignment.** R uses a set of rules to figure out what data type you want based on the value(s) you provide in the assignment statement. Earlier, we saw some examples of ways this process can be confusing or produce unexpected results. Here are some common situations that can cause problems:
 
 ```{r}
+my_var <- 42                # creates a float, not an integer
+my_var <- c("a", 42)        # creates a character vector, not a list
+my_var <- "TRUE"            # creates a character vector, not a logical vector
+my_var <- c(FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, "TRUE")      # same!
+```
+R will not give you a warning or throw an error in any of these cases. It's good to check data type and values after assignment to make sure they are what you want, particularly while you're becoming familiar with R.
 
+**2. Assignment recycles or drops values if dimensions do not match.** We saw an example of recycling earlier:
+
+```{r}
+var_20 <- matrix(1:24, nrow=10)   
+var_20
+```
+In real life, you are much more likely to encounter this problem when assigning values in a vector to a single column. R provides a warning if it needs to recycle values, but keep in mind that it will continue to execute your code. If you get this kind of warning, it's very important to check that the recycled values haven't affected other data you are working with.
+
+A similar problem arises when you try to assign too many values:
+
+```{r}
+var_30 <- 1:3
+var_30[1:3] <- c(10, 11, 12, 13) 
+var_30
+```
+R replaced the three existing values with the first 3 replacement values and ignored the last replacement value. The warning is your reminder to check for effects on other data objects.  
+
+**3. Reassignment removes the previous reference.** R allows you to freely reassign values to the same variable name. While this is convenient, it does come with a danger: you might lose values that you want to keep. This can happen because you simply forgot that you used the variable name earlier in your program. However, it can also happen for less obvious reasons: you made a mistake while typing, your program dynamically assigned a variable name (something we'll cover later), or the assignment is implicit. The code below illustrates the last of these hazards: 
+
+```{r}
+i <- c("Turning and turning in the widening gyre")
+i
+
+```
+The string initially assigned to `i` was over-written, even though we did not explicitly use the assignment operator later in our code. Longer, more descriptive variable names can help reduce the chances that this will happen to you!
+
+**4. The RHS is fully evaluated before assignment happens.** Unlike most programming languages, R uses `<-` instead of `=` to indicate assignment. This is a *very* helpful reminder, because we are so familiar with thinking about `=` in the mathematical sense of indicating equivalence. In computer programming, however, the two sides of an assignment statement are *not* equivalent: the right hand side (RHS) is first fully evaluated, and only then is it assigned to the left hand side (LHS). This is obvious during reassignment, for example:
+
+```{r}
 
 ```
 
-**2. Assignment recycles or drops values if dimensions do not match.** 
+The RHS can be as simple or complicated as you want. Use standard algebraic notation to indicate your desired order of operations on the RHS.
 
 ```{r}
-
 
 ```
- 
-**3. Reassignment overwrites the previous value.** 
+Combining operations into one statement can make code more readable -- to a point. If the RHS is complicated, it can become difficult to follow the logic. In such cases, consider splitting steps into multiple lines of code for clarity. 
+
+**5. Indexing can be used on either or both sides during assignment.** R lets you refer to specific items within a data object during assignment. You can index on the RHS, the LHS, or both. This applies to both square bracket and dollar sign indexing.
+
+The following are equivalent assignments that index on the RHS:
 
 ```{r}
+common_name <- penguins[3,1]
+common_name
+common_name <- penguins$species[3]
+common_name
+```
+Note that RStudio returns values in different ways, depending on the method of indexing. This is just something to be aware of and get used to!
 
+And these are equivalent assignments that index on the LHS:
 
+```{r}
+penguins[3,1] <- "Macaroni"
+head(penguins)
+penguins$species[3] <- "Macaroni"
+head(penguins)
 ```
 
-**4. The RHS is fully evaluated before assignment happens.** 
+Indexing with ranges and and reverse order work as expected:
 
 ```{r}
-
-
-```
-
-**5. Indexing can be used on either or both sides during assignment.** 
-
-```{r}
-
-
+penguins$species[6:2] <- "Macaroni"
+penguins$bill_length_mm[1:5] <- c(200,100)  
+head(penguins, 10)
 ```
 
 
@@ -149,20 +428,108 @@ Assignment is one of the most common operations in writing code. Your work in R 
 R allows you to change the type of a variable *after* assignment, but only if it makes sense. This is known as **coercion** in R documentation (most programming languages call this **casting**). You can also coerce data type during assignment.
 
 ```{r}
+my_var <- 42L                   # start by assigning to integer type
+my_var
+typeof(my_var)
+my_var <- as.double(my_var)     # re-assign the result or it will be lost!
+my_var
+typeof(my_var)
+my_var <- as.character(my_var)
+my_var
+typeof(my_var)
+my_var <- as.logical(42)        # non-zero numbers and characters are TRUE
+my_var
+typeof(my_var)
+my_var <- as.integer(FALSE)     # FALSE becomes 1L, TRUE becomes 0L
+my_var
+typeof(my_var)
+```
 
+And with the `penguins` data frame for practice:
+
+```{r}
+# start by reading in the data set to revert to original values
+penguins <- read_csv("penguins.csv")
+
+# coerce data type for an entire column
 
 ```
+Note that coercing a float to integer truncates. If you want the rounded value, you will need to apply `round()` *before* coercing to integer. 
+
+Coercion has limits. R will raise a warning if you try this:
+
+```{r}
+
+```
+R will not covert the string `two` to the integer `2`. Instead, it inserts a special value `NA` and continues to run your code. As with other warnings, it's important to check that this did change values in other data structures.
 
 
 ## Missing values
 
 R uses the special value `NA` to represent missing data (the name is short for "not available"). 
 
-```{r}
+There are several `NA` values in the `penguins` data frame. If we leave them there, R will not let us do even basic computations:
 
+```{r}
+mean(penguins$bill_depth_mm)
+```
+
+In general, if there are *any* `NA` values in a column, a calculation on that column will return `NA`. This can quickly become annoying. (Note: `tidyverse` functions are an important exception; most ignore `NA` values and give you a warning.)
+
+Use the optional argument `na.rm = TRUE` to request R to ignore `NA` values. (`na.rm` is short for "NA remove".)
+
+```{r}
+mean(penguins$bill_depth_mm, na.rm = TRUE)
+```
+
+R provides tools for working with `NA` values. One of the most useful is `is.na`, which returns a logical vector. Combine `is.na` with different functions to learn how many `NA` values are present and where they are located. We will use these in the second half of today's session and in future sessions.
+
+```{r}
+sum(is.na(penguins$body_mass_g))         # count of NA values for a single column
+which(is.na(penguins$body_mass_g))       # position of NAs for a single column
+colSums(is.na(penguins))                 # count of NA values for all columns
+```
+The following command creates a logical vector with `TRUE` at every position where a column contains an `NA` value, and `FALSE` everywhere else. This can be very useful for filtering data, as we will see in the following section. 
+
+```{r}
+is.na(penguins$body_mass_g)              # returns a logical vector with NAs TRUE
+```
+
+## Boolean indexing
+
+Vectors and lists can be filtered using "Boolean indexing". This involves two steps. First, construct a vector of truth values. Typically, this is done using a condition that you specify. Second, apply this Boolean index to either a vector or a column from a data frame. Where the indexing vector contains a value of `TRUE`, the corresponding value in the object you want to filter is returned. Importantly, the lengths of the Boolean index and the vector or column being filtered must match.
+
+This is easiest to see using a simple vector:
+
+```{r}
+# here is a vector I want to filter
+x <- c(1, 2, 3, 4, 5, 6)
+
+# first, construct the boolean index (here by hand, but normally by condition)
+my_bool_vect <- c(TRUE, FALSE, FALSE, TRUE, TRUE, FALSE)
+
+# second, apply the boolean index to the filter using square bracket indexing
 
 ```
 
+Only the values of `x` that match up with `TRUE` values in the Boolean index are returned.
+
+For a more realistic example, consider finding missing values, as we did in the previous section: `is.na(penguins$body_mass_g)`
+This line of code returns a vector of logical values, based on a condition. In this case, the condition is whether there is missing data. 
+
+However, any condition can be used to create a vector of logical values. For instance, we can create a Boolean index for large penguins:
+
+```{r}
+
+```
+
+We can now use this vector of logical values to filter for rows where penguins weigh more than 3,600 g by passing it to the row value of square bracket indexing.
+
+```{r}
+
+```
+
+It works, but this is a two-step process that could be done more efficiently in one step. So why would we want to use Boolean indexing? The short answer is that filtering with a Boolean vector is computationally very efficient. If you want to use a filter repeatedly, you only need to construct the Boolean vector once, saving time and keeping code simpler. We will see examples later on.   
 
 
 ## Vectorized operations
@@ -171,5 +538,11 @@ R allows you to apply an operator or function to a vector, array, or column with
 
 ```{r}
 
+```
+
+More practice with the `penguins` data frame:
+
+```{r}
+                  
 ```
 
