@@ -44,7 +44,7 @@ Indexing is how you tell R which items within a data object you want to work wit
 ```{r eval = FALSE}
 # compare what happens when you use single and double square brackets to index
 
-# column names also work (these are equivalent to the above indexing
+# column names also work (these are equivalent to the above indexing)
 
 ```
 
@@ -65,7 +65,7 @@ Indexing is how you tell R which items within a data object you want to work wit
 Several helper functions are available that can simplify indexing columns. The following are some of the more useful ones. Note that `where` allows you to specify a condition for selecting columns.
 
 ```{r}
-# examples of helper functions
+# using helper functions
 
 ```
 
@@ -133,6 +133,7 @@ The `filter` verb provides a way to subset rows by condition. Conditions can be 
 Compound conditions can be constructed using operators and parentheses to indicate order of evaluation. 
 
 ```{r}
+
 # compound conditions
 
 # two ways to make the previous expression clearer
@@ -158,25 +159,16 @@ Conditions can also involve testing for set membership, string composition, and 
 
 **Filtering with Boolean indexing**  
 
-Boolean indexing involves creating a vector that contains logical (TRUE/FALSE) values based on some condition or combination of conditions that you specify. This vector can then be use to filter rows where the index column is TRUE.
+Boolean indexing involves creating a vector that contains logical (TRUE/FALSE) values based on some condition or combination of conditions that you specify. This vector can then be use to filter rows where the index column is TRUE. 
 
-To illustrate how this works, consider two vectors.
-
-```{r}
-# ceate an integer vector and a logical vector of equal lengths
-
-# now we can filter the first vector based on truth values
-
-```
-
-Now let's apply this process to a column in a data frame. We'll again use `mutate`, this time to create the index column. Using a descriptive name for the new column helps to make the code easier to interpret later.
+We've seen Boolean indexing in previous sessions. Now let's use it in a pipe. We'll again use `mutate`, this time to create the index column. Using a descriptive name for the new column helps to make the code easier to interpret later.
 
 ```{r}
-# first, create the index column
+  # first, create the index column
 
-# second, filter using the index column
+  # second, filter using the index column
 
-# this becomes more powerful when you use it in a pipe  
+  # this becomes more powerful when you use it in a pipe  
 
 ```
 
@@ -227,7 +219,23 @@ The `Pool` column represents colony morphology as one of two possible values: "S
 ```{r}
 # add a new allowable value
 
-# plot with 3 levels
+```
+
+Now we can change the level of the intermediate value. We could do this by directly assigning the value "I" to the single intermediate value like this: `yeast[69,3] <- "I"`
+
+That would work, but is *not* good practice for several reasons.  First, direct assignment is tedious and error-prone. It does not scale well when many values need to updated. Second, direct assignment is not re-usable. If we want to run our code on a new data set, we would need to filter for and then update each intermediate value by hand. Third, direct assignment is not explicit. By including a condition, we are clear about the criteria used to assign the value "I".
+
+```{r}
+# use an explicit condition to update any intermediate value
+
+
+```
+
+The downside to conditional updating is that the syntax is somewhat awkward. In the example above, we pass our data frame to `mutate()` and indicate the column to conditionally update. We then call `if_else()` and pass the condition, then the new value if the condition is met, and finally the column name again. This last argument tells `if_else` to leave any value that doesn't meet the condition alone. If we wanted to, we could change those values as well; see the documentation for `if_else` for details.
+
+Now we can plot the result:
+
+```{r}
 
 ```
 
