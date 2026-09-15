@@ -1,25 +1,9 @@
 ---
-title: "Grouping and summarizing in R"
-author: "Bio724D: Fall 2024"
-date: today
-
+title: "Grouping and summarizing using dplyr"
+date-format: iso
 format: 
   html:
-    theme: [default, custom.scss]
-    df-print: paged
-    toc: true
-    toc-depth: 3    
-    toc-expand: 3
-    code-line-numbers: false
-    embed-resources: true  
-  revealjs:
-    theme: [simple, custom.scss]
-    df-print: paged
-    scrollable: true
-    slide-level: 2
-    code-line-numbers: false
-    embed-resources: true  
-    output-file: grouping_pivoting_joins_revealjs.html    
+    embed-resources: true   
 execute:
   echo: true
   eval: true
@@ -27,21 +11,16 @@ execute:
   warning: false
 ---
 
-::: {.callout-note collapse="true"}
+
 ## Libraries
 
 ```{r}
-#| echo: true
-#| output: false
 library(tidyverse)
 ```
-:::
-
-# Data
 
 
-::: {.callout-note collapse="true"}
-## Load data
+## Data
+
 
 We'll use the `penguins` data and the yeast colony morphology data that Greg introduced in the first part of this lecture.
 
@@ -54,12 +33,12 @@ yeast <- read_csv(yeast_URL)
 glimpse(yeast)
 ```
 
-:::
 
-# Grouping
+## Grouping
 
-::: {.callout-note collapse="true"}
-## Grouping using `group_by`
+dplyr's grouping functions are one of the most powerful features of the tidyverse.  Appropriate application of `group_by()` and related functions is a huge time saver in terms of discovering, exploring, and exploiting sub-structure within your data.
+
+### Grouping using `group_by`
 
 The function `group_by` "decorates" a data frame with grouping information:
 
@@ -71,7 +50,7 @@ The function `group_by` "decorates" a data frame with grouping information:
 After grouping, there is no visible restructuring of the data frame:
 
 ```{r}
-yeast_grouped <-
+by_pool <-
   yeast |> 
   group_by(Pool)
 
@@ -82,82 +61,79 @@ yeast_grouped <-
 In this second example, we group by both morphology and genotype:
 
 ```{r}
-yeast_grouped2 <-
+by_pool_and_genotype <-
   yeast |>
   group_by(Pool, Cyr1.geno)
 
 # as before, use glimpse to take a look at this df
 ```
-:::
 
-::: {.callout-note collapse="true"}
-## Functions for exploring grouped data frames
+
+ 
+### Functions for exploring grouped data frames
 
 Although a grouped data frame doesn't look different, its has additional information attached to it that affect how it works with group-aware operations. There are a variety of dplyr functions for querying a data frame about it's grouping structure (if any).
 
-### `is.grouped_df`
+#### `is.grouped_df`
 
 You can check if a data frame is grouped using `is.grouped_df`
 
 ```{r}
-is.grouped_df(yeast_grouped)
+is.grouped_df(by_pool)
 ```
 
-### `groups`
+#### `groups`
 
 `groups` returns the variable(s) the data frame is grouped on:
 
 ```{r}
-groups(yeast_grouped)
-groups(yeast_grouped2)
+groups(by_pool)
+groups(by_pool_and_genotype)
 ```
 
-### `group_keys`
+#### `group_keys`
 
 `group_keys` returns a data frame describing the groups:
 
 ```{r}
-group_keys(yeast_grouped)
-group_keys(yeast_grouped2)
+group_keys(by_pool)
+group_keys(by_pool_and_genotype)
 ```
 
-### `group_size`
+#### `group_size`
 
 `group_size` returns the number of observations in each group:
 
 ```{r}
-group_size(yeast_grouped)
-group_size(yeast_grouped2)
+group_size(by_pool)
+group_size(by_pool_and_genotype)
 ```
-:::
 
-::: {.callout-important collapse="true"}
-## ★ Grouping: Self exploration
+
+### ★ Grouping: Self exploration
 
 Use the help and code exploration to understand what the functions `group_rows`, `group_indices` and `group_split` do.
-:::
 
-::: {.callout-note collapse="true"}
-## Removing grouping information using `ungroup`
+
+ 
+### Removing grouping information using `ungroup`
 
 Grouping can be removed using the `ungroup` function:
 
 ```{r}
-yeast_ungrouped <- ungroup(yeast_grouped)
-
-is.grouped_df(yeast_ungrouped)
+by_pool |>
+  ungroup() |>
+  is.grouped_df()
 ```
-:::
 
-# Counting and Summarizing
 
-::: {.callout-note collapse="true"}
-## Counting
+
+## Counting observations by group
 
 The function `dplyr::count` when applied to a grouped data frame will return a data frame giving the count of observations per group:
 
 ```{r}
-count(yeast_grouped2)
+count(by_pool_and_genotype)
 ```
 
 If counting is all you want to do, then you don't need to explicitly group before hand as the `count` function takes grouping variables as arguments:
@@ -181,22 +157,20 @@ yeast |>
 ```
 
 
-:::
-
-::: {.callout-note collapse="true"}
-## Summarizing
+ 
+## Summarizing by group
 
 The `summarize` function allows us to create group-wise data summaries. This is a very powerful tool for calculate summary statistics for marginal distributions.
 
 ```{r}
-yeast_grouped2 |>
+by_pool_and_genotype |>
   summarize(nobs = n(),
             mean_Cyr1.exp = mean(Cyr1.expr, na.rm = TRUE),
             sd_Cyr1.exp = sd(Cyr1.expr, na.rm = TRUE))
 ```
-:::
 
-::: {.callout-note collapse="true"}
+
+ 
 ## Row-wise summaries
 
 `summarize` works across rows, but sometimes you want to make calculations across columns. The `rowwise` function facilitates this:
@@ -212,42 +186,98 @@ yeast |>
 # two different ways to select columns above
 # Note that ranges can be fragile when data gets reordered
 ```
-:::
 
 
-# More complex operations on groups
 
-For the following examples, we'll return to using the `penguins` data set. Remember to load the `palmerpenguins` data set first.
+## More complex operations on groups
 
-::: {.callout-note collapse="true"}
-## `mutate` after `group_by`
+In addition to `summarize()` and `count()` which are explicitly grouping functions, several of the dplyr functions we have already encountered will taking grouping structure into account.
 
-`mutate` is "group aware", and will apply it's calculations in a group-wise manner on a grouped data frame.
+### `filter` after `group_by`
 
-Compare the following:
+`filter` can be applied in a group-wise fashion, with the filtering applied separately within each group and those observations passing the criteria returned in a groupd data frame:
 
-* Ungrouped data frame
+Compare the ungrouped result:
+
+```{r}
+penguins |>
+  filter(body_mass_g == max(body_mass_g, na.rm = TRUE))
+```
+
+to the grouped result:
+
+```{r}
+penguins |>
+  group_by(species) |>
+  filter(body_mass_g == max(body_mass_g, na.rm = TRUE))
+```
+
+ 
+### `mutate` after `group_by`
+
+`mutate` is also "group aware", and will apply it's calculations in a group-wise manner on a grouped data frame.
+
+The following code calculates the differences between individual penguin body mass and the "grand mean" of body mass (taken across all penguins in the dataset):
+
 ```{r}
 penguins |>
   mutate(deviation = body_mass_g - mean(body_mass_g, na.rm = TRUE)) |>
-  pull(deviation) |> # pull is similar to $
+  pull(deviation) |> # pull is a dplyr function similar to $
   head(5)
 ```
 
+If we apply `group_by()` first, the calculations in `mutate` are applied in a group-wise fashion. In this case, we are computing the the deviation of each penguin from its species mean:
 
-* Grouped data frame
 ```{r}
 penguins |>
   group_by(species) |>
   mutate(deviation = body_mass_g - mean(body_mass_g, na.rm = TRUE)) |>
-  pull(deviation) |> # pull is similar to $
+  pull(deviation) |>
   head(5)
 ```
 
+### `slice` after `group_by`
 
-:::
+The various dplyr `slice` functions are group aware:
 
-::: {.callout-note collapse="true"}
+```{r}
+# get the first observation of each species
+penguins |>
+  group_by(species) |>
+  slice(1)
+```
+```{r}
+# get the smallest penguin(s) by body mass for each species
+penguins |>
+  group_by(species) |>
+  slice_min(body_mass_g)
+```
+
+## The .by argument to `summarize`, `filter`, `mutate`, and `slice`
+
+Grouping followed by filtering, mutating, and slicing are common enough operations that recent versions of dplyr have implemented the ability to do grouping operations directly from these functions.  This is accomplished by [using the `.by` argument](https://dplyr.tidyverse.org/reference/dplyr_by.html):
+
+```{r}
+penguins |>
+  summarize(mean_body_mass = mean(body_mass_g, na.rm = TRUE),
+            sd_body_mass = sd(body_mass_g, na.rm = TRUE),
+            .by = species)
+```
+
+Here's an example using `slice`:
+
+```{r}
+penguins |>
+  drop_na() |>
+  slice(2, .by = c(species, sex))
+```
+
+
+
+Unlike `group_by()` followed by these functions, when the `.by` argument is used an *ungrouped* data frame is always returned. i.e. The grouping only applies within the calling function.
+
+
+ 
 ## Applying functions by group using `group_map` and `group_modify`
 
 
@@ -304,11 +334,11 @@ lm_by_species_sex_df
 ```
 
 
-:::
 
 
 
-::: {.callout-note collapse="true"}
+
+ 
 ## Extended example: ANOVA visualized
 
 
@@ -479,4 +509,3 @@ combined <-
 combined
 ```
 
-:::
