@@ -350,9 +350,9 @@ Recall that the key idea behind Analysis of Variance (ANOVA) is that:
 
 * The test statistic used in ANOVA is designated $F$, and is based on the ratio of two measures of variance, the "group mean square deviation" ($\text{MS}_\text{groups}$; measures between group variance) and the "error mean square deviation" ($\text{MS}_\text{error}$; measures within group variance):
 
-\[
+$$
 F = \frac{\text{MS}_\text{group}}{\text{MS}_\text{error}}
-\]
+$$
 
 * Under the null hypothesis, the between group and within group variances are similar and thus the $F$ statistic should be approximately 1.
 

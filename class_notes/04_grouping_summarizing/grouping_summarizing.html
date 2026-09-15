@@ -2632,7 +2632,9 @@ window.Quarto = {
 <li><p>If the observations in each group are drawn from populations with equal means (and variances) then the variation <em>between</em> group means should be similar to the inter-individual variation <em>within groups</em>.</p></li>
 <li><p>The test statistic used in ANOVA is designated <span class="math inline">\(F\)</span>, and is based on the ratio of two measures of variance, the “group mean square deviation” (<span class="math inline">\(\text{MS}_\text{groups}\)</span>; measures between group variance) and the “error mean square deviation” (<span class="math inline">\(\text{MS}_\text{error}\)</span>; measures within group variance):</p></li>
 </ul>
-<p>[ F = ]</p>
+<p><span class="math display">\[
+F = \frac{\text{MS}_\text{group}}{\text{MS}_\text{error}}
+\]</span></p>
 <ul>
 <li><p>Under the null hypothesis, the between group and within group variances are similar and thus the <span class="math inline">\(F\)</span> statistic should be approximately 1.</p></li>
 <li><p>Large values of the <span class="math inline">\(F\)</span>-statistic means that the between group variance exceeds the within group variance, indicating that at least one of the means is different from the others</p></li>
