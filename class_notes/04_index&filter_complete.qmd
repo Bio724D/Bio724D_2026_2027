@@ -1,0 +1,328 @@
+---
+title: "Filtering in R"
+author: "Greg Wray"
+date: today
+date-format: iso
+format: 
+  html:
+    embed-resources: true
+editor: source
+---
+
+One of the most fundamental tasks in data analysis is searching for patterns. Filtering is the process of isolating observations or records in a data set that match a specific criterion. This is often the first step in finding patterns and testing for similarities and differences among subsets of the data. In the first half of today's class, we'll first briefly review indexing and piping methods, then cover basic filtering methods. 
+
+## Set up
+
+Load the tidyverse package and two practice datasets:
+
+```{r include = FALSE, silent = TRUE}
+library(tidyverse)
+library(palmerpenguins)
+penguins <- penguins
+yeast <- read_csv("seg_strain_table.csv")
+```
+
+## Indexing methods
+
+Indexing is how you tell R which items within a data object you want to work with. Base R provides three methods for indexing data objects, and `dplyr` provides a fourth method. Here, we look at how these four indexing methods apply to data frames specifically. 
+
+**Square-bracket indexing** `[ ]` is the most general method, and can be applied to any data object. Square bracket indexing usually preserves the class of the items, so indexing a column in a data frame will return a list. In general, using numbers to index data objects is efficient for one-time operations, but using names is more robust and far better for code you keep. 
+
+```{r}
+# columns can be indexed by integer
+penguins[4]             
+penguins[1:3]           
+penguins[c(1,5)]        
+penguins[c(5,1)]        
+
+# columns can also be indexed by name; quotes are required
+penguins["island"]      
+penguins[c("sex", "island")]      
+
+# rows can be indexed by integer by adding a comma
+penguins[7,]            
+penguins[1:20,]         
+penguins[c(5,10),]      
+
+# combinations of rows and columns can be indexed by integers and column names
+penguins[1, 4]           
+penguins[1:10, 1:4]     
+penguins[1:10, "island"]        
+```
+
+**Double square bracket indexing** `[[ ]]` is useful when you want only the *values* in a column of a data. This is an important distinction: square bracket indexing usually returns a list, while double square bracket indexing returns a vector of values without the column name. This can be important in pipes, as we will see later. 
+
+```{r eval = FALSE}
+# compare what happens when you use single and double square brackets to index
+penguins[6]                      
+typeof(penguins[6])             
+penguins[[6]]                    
+typeof(penguins[[6]])            
+
+# column names also work (these are equivalent to the above indexing)
+penguins["body_mass_g"]
+penguins[["body_mass_g"]]
+```
+
+**Dollar-sign indexing** `$` only works if columns have names. Quotes are not needed around names, as they are part of the metadata of the object. When applied to a data frame, dollar sign indexing returns an atomic vector. Only one column can be indexed at a time.
+
+```{r}
+# indexing a column in a data frame should be familiar by now
+penguins$species                
+typeof(penguins$species)        
+```
+
+**Indexing with dplyr** The dplyr functions ("verbs") provide  more flexible indexing than the Base R methods. To index columns, use the `select` verb and index by name; quotes are not needed (dollar sign indexing does not work). Note that `select` returns a tibble, even if you only ask for one column. If you need to index columns in a pipe and pass the results to a function that expects a vector (rather than list), use the dplyr verb `pull` or use dollar sign indexing.   
+
+```{r eval = FALSE}
+# basic indexing using select as an example 
+select(penguins, species)               
+select(penguins, c(species, island))    
+select(penguins, c(island, species))    
+select(penguins, body_mass_g:year)      # not recommended
+```
+
+Several helper functions are available that can simplify indexing columns. The following are some of the more useful ones. Note that `where` allows you to specify a condition for selecting columns.
+
+```{r}
+# using helper functions
+select(penguins, -(species))            # remove one column
+select(penguins, -c(species, sex))      # remove multiple columns
+select(penguins, starts_with("bill"))
+select(penguins, ends_with("mm"))
+select(penguins, contains("length"))
+select(penguins, where(is.numeric))     # is.character, is.logical, etc. also work
+select(penguins, -where(is.numeric))    # most helper functions can be negated
+```
+
+
+## Piping in R
+
+Pipes provide a readable, debuggable, extensible way to write code when working with data frames.
+
+Before diving in, make sure you have the RStudio preferences set to use the **native pipe operator**, which looks like this: `|>`. Go to the `Tools` menu, select `Global options`, and the `Code` panel. Practice using the keyboard shortcut for the pipe operator `shift-ctrl-M` as you go through this workbook. 
+
+In older code you may encounter the original **magrittr pipe operator**, which looks like this `%>%` and depends on the `magrittr` package. In general, it's better to use the native pipe operator in code you generate, including re-purposing old code. However, it's safer to retain the magrittr pipe operator when simply running legacy code, since it functions differently from the native pipe operator in some circumstances.   
+
+**Recap of piping basics**
+
+Two things to keep in mind when using pipes are how missing values are handled and what kind of data structure the next step expects. In general, base R functions require vectors and don't accept `NA`s. In contrast, Tidyverse functions typically accept data frames or tibbles and silently accept missing values. When in doubt, check the documentation! 
+
+```{r eval = FALSE}
+# example of a function that doesn't accept NA values by default and a solution
+penguins$bill_depth_mm |> mean()              
+penguins$bill_depth_mm |> mean(na.rm = TRUE)  
+
+# example of a function that requires a vector as input and a solution
+select(yeast, CM.a) |> mean()   
+select(yeast, CM.a) |> typeof()   
+yeast$CM.a |> mean()
+yeast$CM.a |> typeof()
+```
+
+A more readable way to solve this problem is to use `dplyr`'s `pull` function, which passes a single vector of values to the next step in a pipe.  
+
+```{r}
+# extract a column by name
+pull(yeast, CM.a) |> mean()
+```
+
+You can also extract a column by position using `pull`. Using negative values references columns by position counting from the right-most column, which is useful when you don't know the name of the last column or columns.
+
+```{r}
+# extract a column by position
+pull(yeast, 3)        
+pull(yeast, -1)        # negative values are positions from the right-most column
+```
+
+**Implicit data object**
+
+For nearly all `dpyr` functions, the first argument you pass is the data object you want to work with. When using `dplyr` functions in a pipe, however, you need to omit the the data object. 
+
+```{r}
+# not in a pipe
+select(yeast, starts_with("Adhes"))
+
+# in a pipe
+yeast |> 
+  select(starts_with("Adhes")) |> 
+  head()
+```
+
+
+## Filtering in R
+
+Filtering is the process of extracting a specific subset of rows from a data frame. Paul introduced the `dplyr` verb `filter` earlier. (Note that there is a base R function of the same name that works slightly differently; the name `filter` is reassigned to the `dplyr` function when the tidyverse is loaded.) 
+
+Here, we will briefly review basic filtering, then move on to some intermediate filtering methods using logical and factor data types.
+
+**Recap of filtering basics**
+
+The `filter` verb provides a way to subset rows by condition. Conditions can be numeric, logical, string-, or set-based, or some combination of these. The overall condition must evaluate to TRUE or FALSE.  
+
+```{r}
+# basic format for filtering 
+penguins |>                                                
+  filter(bill_length_mm > 52) |>                              
+  count()
+```
+
+Compound conditions can be constructed using operators and parentheses to indicate order of evaluation. 
+
+```{r}
+
+# compound conditions
+penguins |> 
+  filter(sex == "female", flipper_length_mm > 200) |>      # == tests for identity 
+  select(sex, flipper_length_mm)
+
+penguins |> 
+  filter(island != "Biscoe", flipper_length_mm > 200) |>   # != tests for non-identity 
+  select(island, flipper_length_mm)
+
+# two ways to make the previous expression clearer
+penguins |>
+  filter(island != "Biscoe" & flipper_length_mm > 200) |>  # & operator is more explicit
+  select(island, flipper_length_mm)
+
+penguins |> 
+  filter(island != "Biscoe") |>                            # filter in 2 steps
+  filter(flipper_length_mm > 200) |>                       
+  select(island, flipper_length_mm)
+```
+
+Functions can be embedded directly into filtering conditions. In the second example, we first use the `mutate` function to create a new column with values computed from other columns, then filter based on the new values.
+
+```{r}
+# find the female with the shortest flippers
+penguins |> 
+  filter(sex == "female") |> 
+  filter(flipper_length_mm == min(flipper_length_mm)) |> 
+  select(sex, species, island)
+
+# find the yeast strain with the largest average adhesion value
+yeast |> 
+  mutate(Adhes.mean = (Adhes.a + Adhes.b + Adhes.c)/3) |> 
+  filter(Adhes.mean == max(Adhes.mean)) |> 
+  select(Strain)
+```
+
+Conditions can also involve testing for set membership, string composition, and logic comparisons. We will cover filtering with strings later, but for now the following is a simple example of testing for membership in a defined set of values using the `%in%` operator.  
+
+```{r}
+# testing for set membership
+yeast |> 
+  filter(Cyr1.geno %in% c('C', 'H')) |> 
+  count() 
+```
+
+
+**Filtering with Boolean indexing**  
+
+Boolean indexing involves creating a vector that contains logical (TRUE/FALSE) values based on some condition or combination of conditions that you specify. This vector can then be use to filter rows where the index column is TRUE. 
+
+We've seen Boolean indexing in previous sessions. Now let's use it in a pipe. We'll again use `mutate`, this time to create the index column. Using a descriptive name for the new column helps to make the code easier to interpret later.
+
+```{r}
+  # first, create the index column
+  penguins <- mutate(penguins, thick_billed = (bill_length_mm / bill_depth_mm) < 2.0)
+  
+  # second, filter using the index column
+  filter(penguins, thick_billed) 
+  
+  # this becomes more powerful when you use it in a pipe  
+  penguins |> 
+    filter(thick_billed) |> 
+    count()
+```
+
+
+**Filtering with factors** 
+
+**Factors** are a special data structure that allows for efficient processing of categorical data. They are most useful in cases where you plan to store a limited number of distinct data values, typically strings. Examples of data that are often stored as factors include experimental/control and sex. Behind the scenes, R stores factor values as integers. The data object contains a look-up table that associates these integer values with a representation of the values (e.g., control = 0, experimental = 1). This encoding provides more efficient use of memory and faster operations on the data (e.g., filtering, sorting, grouping).
+
+You may encounter data frames containing factors, so it is important to know how to recognize them. 
+
+```{r}
+# factors look like ordinary character columns
+typeof(penguins$species)          # returns integer! what is going on?
+class(penguins$species)           # returns factor (mystery solved)
+
+# the best way to check is with a logical test
+is.factor(penguins$species)       
+```
+
+Factors have several useful properties. One of the most important advantages is that they help catch data input errors. Note that R uses the term "levels" to refer to the set of defined values that a factor object can take. 
+
+```{r eval = FALSE}
+# factors only allow pre-defined values
+levels(penguins$species)          # returns a vector of all valid values
+penguins[1,1] <- "Macaroni"       # raises an error: not an allowed value
+```
+
+To explore how to work with factors, we will switch to the yeast data frame. First, we will convert a column from character to factor.
+
+```{r}
+# coerce a column to factor
+typeof(yeast$Pool)                     
+yeast$Pool <- as.factor(yeast$Pool)    
+is.factor(yeast$Pool)                  
+levels(yeast$Pool)                     
+```
+
+When you filter a factor column, use the human representation, not the underlying integer value.
+
+```{r}
+# identify the strain with 'C' morphology that has the lowest cAMP concentration
+yeast |> 
+  filter(Pool == 'C') |> 
+  select(cAMP) |> 
+  min(na.rm = TRUE)       
+```
+
+The `CM` columns in the yeast data set contain a measure of colony morphology from simple (1.0) to more complex (higher values).   
+
+```{r}
+# take a quick look at colony morphology scores
+yeast <- mutate(yeast, CM.mean = (CM.a + CM.b + CM.c) / 3)
+ggplot(yeast, aes(x = CM.mean)) +
+  geom_bar(aes(fill = Pool))
+```
+
+The `Pool` column represents colony morphology as one of two possible values: "S" (simple) and "C" (complex). However, we can see that there is one `CM` value that is intermediate. We can assign a new factor level "I" to accommodate intermediate values.
+
+```{r}
+# add a new allowable value
+levels(yeast$Pool) <- c(levels(yeast$Pool), "I")
+levels(yeast$Pool)                     # "I" is now a valid value
+```
+
+Now we can change the level of the intermediate value. We could do this by directly assigning the value "I" to the single intermediate value like this: `yeast[69,3] <- "I"`
+
+That would work, but is *not* good practice for several reasons.  First, direct assignment is tedious and error-prone. It does not scale well when many values need to updated. Second, direct assignment is not re-usable. If we want to run our code on a new data set, we would need to filter for and then update each intermediate value by hand. Third, direct assignment is not explicit. By including a condition, we are clear about the criteria used to assign the value "I".
+
+```{r}
+# use an explicit condition to update any intermediate value
+yeast <- yeast |>
+  mutate(Pool = if_else(CM.mean > 1.2 & CM.mean < 2.8, "I", Pool))
+```
+
+The downside to conditional updating is that the syntax is somewhat awkward. In the example above, we pass our data frame to `mutate()` and indicate the column to conditionally update. We then call `if_else()` and pass the condition, then the new value if the condition is met, and finally the column name again. This last argument tells `if_else` to leave any value that doesn't meet the condition alone. If we wanted to, we could change those values as well; see the documentation for `if_else` for details.
+
+Now we can plot the result:
+
+```{r}
+ggplot(yeast, aes(x = CM.mean)) +
+  geom_bar(aes(fill = Pool))
+```
+
+By default, factor values are represented in alphabetical order. Sometimes it is useful to have factors in a different order because this represents a property of the data. This is why factor values are called "levels" in R. 
+
+```{r}
+# reorder levels
+levels(yeast$Pool)                # our factor levels are not in a sensible order
+yeast$Pool <- fct_relevel(yeast$Pool, c("S", "I", "C"))
+levels(yeast$Pool)                # now they are in a biologically meaningful order
+```
+
+
