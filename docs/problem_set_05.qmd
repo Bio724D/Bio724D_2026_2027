@@ -61,13 +61,9 @@ Wrangle the data by carrying out the following steps, in order:
 
     a) Why did this cause the merge operation to create additional columns?
     
-    b) You could write some code to rename the columns before you merge each new data frame, and continue to use `bind_rows()` to append the data. However, this won't protect you from future changes in column name. 
+    b) One way to avoid this problem in the future is to automate the process of checking new data *before* merging it with the existing data frame. Write code to test for the correct number of columns, and to test for exactly the same names. 
   
-    c) How could using a join rather than a merge avoid this kind of problem in the future? What specific join method would be appropriate for this situation? Which column(s) would you use for the join? 
-    
-    d) Having thought through these considerations, provide sample code that implements a join to append the weather data. 
-    
-    e) Would this method of appending monthly data work no matter how the columns are named? Would it work if the columns kept the same names but were present in a different order? Would it work if additional columns were added to the monthly data files?
+    c) Test your code to make sure it works. You can use simplified version of the weather data sets that we used in class this week for this purpose. Test at least three different problems that your code can catch. For example, change one letter in the name of a single column. 
     
 
 7. Joins provide a useful way to combine data from two different data frames. Joins are also very commonly used to extract specific information by drawing from two data frames at once. To do this using `dplyr` tools, you can follow a join with `filter`, `arrange`, and/or `select` to create powerful queries.  Using the `yeast_spellman-1998-expression.tsv` file used in class answer the following:
