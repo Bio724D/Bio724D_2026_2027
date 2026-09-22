@@ -68,15 +68,15 @@ Wrangle the data by carrying out the following steps, in order:
 
 7. Joins provide a useful way to combine data from two different data frames. Joins are also very commonly used to extract specific information by drawing from two data frames at once. To do this using `dplyr` tools, you can follow a join with `filter`, `arrange`, and/or `select` to create powerful queries.  Using the `yeast_spellman-1998-expression.tsv` file used in class answer the following:
 
-    a) How many yeast genes that are expressed in the nucleus show a decrease in gene expression in the "alpha7" experiment? To answer that question, left join the two data frames as we did in class, then pipe the result into a filter for "nucleus" in column `C`, then pipe that result into a filter for <0 in column `alpha7`, then pipe that result into nrow(). Try it out! You should get 472.
+    a) How many yeast genes that are expressed in the nucleus show a decrease in gene expression in the "alpha7" experiment? To answer that question, left join the two data frames as we did in class, then pipe the result into a filter for "nucleus" in column `C`, then pipe that result into a filter for <0 in column `alpha7`, then pipe that result into nrow(). Try it out! 
     
-    b) Now use this approach to answer a few more questions. For each, write the entire process as a single pipe rather than a sequence of individual commands.
+Now use this approach to answer a few more questions. For each, write the entire process as a single pipe rather than a sequence of individual commands.
     
-    c) How many ribosomal RNA genes increase in expression in both experiment `alpha7` and `alpha14`? (Hint: filter for "rRNA_gene" in column `gene_type`.)
+    b) How many ribosomal RNA genes increase in expression in both experiment `alpha7` and `alpha14`? (Hint: filter for "rRNA_gene" in column `gene_type`.)
     
-    d) Which ribosomal RNA gene decreased in expression the most in experiment `alpha7`? 
+    c) Which ribosomal RNA gene decreased in expression the most in experiment `alpha7`? 
     
-    e) How many genes that are not expressed in the nucleus increased in expression in `alpha7` and decreased in expression in `alpha14`?
+    d) How many genes that are not expressed in the nucleus increased in expression in `alpha7` and decreased in expression in `alpha14`?
     
     
     
