@@ -13,11 +13,6 @@ format:
 library(tidyverse)
 library(RColorBrewer)
 
-# ggplot2 extensions
-library(ggrepel)
-library(GGally)
-library(ggmagnify)
-
 # data
 library(palmerpenguins)
 
@@ -63,9 +58,20 @@ xy <- expand_grid(x,y)
 xyz <- mutate(xy, z = zfunc(x,y))
 
 ggplot(xyz, aes(x = x, y = y, z = z)) +
-  geom_contour_filled() +   # try with geom_contour() instead
+  geom_contour() +   
+  coord_equal() +
+  theme_classic()
+```
+
+The contour's are shown above but important information is missing about what regions are "down" versus "up". Here's the same plot enhanced with color to make the changes in the z-axis  more apparent.
+
+```{r}
+ggplot(xyz, aes(x = x, y = y, z = z)) +
+  geom_contour_filled() + 
   coord_equal() 
 ```
+
+
 
 I think a diverging color scheme makes more sense here, since the data is centered around zero. I like the "RdBu" (red-blue) diverging color scheme for data like this, but reversed (so blue = low, red = high)
 
@@ -81,6 +87,33 @@ ggplot(xyz, aes(x = x, y = y, z = z)) +
 
 
 ```
+
+The above plot looks pretty good, but when contours are complicated or numerous the fill colors can get overwhelming.  Another option is to draw simple contours but with the contour lines colored by level:
+
+```{r}
+ggplot(xyz, aes(x = x, y = y, z = z)) +
+  geom_contour(aes(color = after_stat(level))) +
+  scale_color_distiller(palette = "RdBu", direction = -1) + 
+  coord_equal() +
+  theme_classic()
+
+```
+
+If you want to explicitly label contour lines, see the [metR](https://eliocamp.github.io/metR/index.html) package. 
+
+### Contour plots for depicting bivariate distributions
+
+A useful application of contour plots is to depict bivariate probability distributions, using `geom_density_2d()`
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, y = flipper_length_mm)) +
+  geom_point(size=1, alpha = 0.5) +
+  scale_color_distiller(palette = "Reds") + 
+  geom_density_2d()
+```
+
+
+
 
 ### Heat maps
 
@@ -113,7 +146,7 @@ Then draw the plot:
 #| fig-width: 4
 #| fig-height: 12
 
-# let's explicitly generate a color scheme
+# let's try a differen t color scheme
 color.scheme <- rev(brewer.pal(9,"PiYG"))
 
 cdc28_cell_cycle |>
@@ -171,74 +204,27 @@ ggsave("cdc28-heatmap.png", better_heat,  width = 4, height = 12, dpi=600)
 
 There is an "official" gallery for ggplot2 extensions, which can be found at the following URL: https://exts.ggplot2.tidyverse.org/index.html
 
-We've already used some ggplot2 extensions, such as `patchwork`. Today we'll introduce a few more
-
-
-  * ggrepel -- for annotation  / labeling; https://ggrepel.slowkow.com/
+We've already used some ggplot2 extensions, such as `patchwork`. Today we'll introduce a few more:
 
   * ggmagnify -- magnified insets; https://github.com/hughjonesd/ggmagnify
-    -- see also https://ggforce.data-imaginist.com/ for a facet style "zoom"
+    -- see the instructions at the link above to install ggmagnify
+
+  * ggrepel -- for annotation  / labeling; https://ggrepel.slowkow.com/ -- can be installed via the standard package manager
 
 
-## Basic annotations
-
-### Highlighting via layers
-
-A simple way to highlight data of interest is by layering geoms. 
-
-Here for example we highlight two points in a data set by stacking two `geom_point` layers:
-
+Install ggmagnify and ggrepel and then load them:
 
 ```{r}
-# highlight biggest and smallest penguins by body mass
-penguins |>
-  ggplot(aes(x = body_mass_g, y = flipper_length_mm)) +
-  geom_point(
-    data = filter(penguins |> drop_na(body_mass_g), 
-                  body_mass_g >= max(body_mass_g) | body_mass_g <= min(body_mass_g)),
-    color = "orange",
-    size = 3) +  
-  geom_point() 
+library(ggmagnify)
+library(ggrepel)
 ```
 
 
-### Annotating 
 
-
-ggplot has an `annotate` function for drawing text, line segments, curves, etc to explicitly call out features in plots.
-
-From the `annotate` help: "This function adds geoms to a plot, but unlike a typical geom function, the properties of the geoms are not mapped from variables of a data frame, but are instead passed in as vectors"
-
-Here's an updated version of the figure above to which we've added text and arrows:
-
-
-```{r}
-penguins |>
-  ggplot(aes(x = body_mass_g, y = flipper_length_mm)) +
-  geom_point(
-    data = filter(penguins |> drop_na(body_mass_g), 
-                  body_mass_g >= max(body_mass_g) | body_mass_g <= min(body_mass_g)),
-    color = "orange",
-    size = 3) +  
-  geom_point() +
-  annotate(geom = "curve", 
-           x = 6000, y = 200, xend = 6300, yend = 220, 
-           curvature = .3, arrow = arrow(length = unit(2, "mm"))) +
-  annotate(geom = "text", 
-           x = 6000, y = 198, 
-           label = "Kowalski", hjust = "center") +
-  annotate(geom = "curve", 
-           x = 2800, y = 210, xend = 2690, yend = 193, 
-          curvature = .3, arrow = arrow(length = unit(2, "mm"))) +
-  annotate(geom = "text", 
-           x = 2800, y = 212, 
-           label = "Pingu", hjust = "center")
-  
-```
 
 ### Magnifying regions of a plot
 
-ggmagnify provides a geom for "zooming in" on a region of a plot.
+ggmagnify provides a geom for "zooming in" on a region of a plot.  You create your plot using whatever geom(s) are appropriate and then call `geom_magnify` with two vectors specifying the bounds of the plot you want to magnify (`from`) and the region of the plot where you want the mangified image to be drawn (`to`).
 
 ```{r, warning=FALSE}
 
@@ -248,9 +234,10 @@ z <- ggplot(penguins,
            color = species,
            shape = sex)) + 
   geom_point(size=2, alpha=0.6) +
-  theme_classic() +
+  theme_classic() +  # what happens when you move this after coord_cartesian?
   geom_magnify(from = c(190,195,45,50), to = c(220, 235, 25,40)) +
-  coord_cartesian(xlim = c(170,240), ylim = c(20,60)) +
+  coord_cartesian(xlim = c(170,240), 
+                  ylim = c(20,60)) +
   theme(legend.position = "top") 
   
 z
@@ -260,7 +247,7 @@ z
 
 ### Labeling points
 
-Labeling points with text is another form of annotation.  The function `geom_text` supports basically labeling, but as we'll see below it has some limitations. A ggplot extension package called `ggrepel` extends the functionality of `geom_text`, allowing for nicer automatic labelling of points.
+Labeling points with text is another form of annotation.  The function `geom_text` supports basically labeling, but it has some limitations. A ggplot extension package called `ggrepel` extends the functionality of `geom_text`, allowing for nicer automatic labelling of points.
 
 #### Example data: Microbescope
 
@@ -358,12 +345,15 @@ ggsave("microbescope.png", width = 14, height=8)
   * GGally -- ggpairs; https://ggobi.github.io/ggally/articles/ggpairs.html
   
   
-The `ggpairs` function from the package GGally is really useful for exploratory data analysis.  It will generate a "matrix" of plots representing the relationships between all pairs of variables in a data frame. It handles continuous and categorical data well:
+The `ggpairs` function from the package GGally is  useful for exploratory data analysis.  It will generate a "matrix" of plots representing the relationships between all pairs of variables in a data frame. It handles continuous and categorical data well. ggpairs works best with a modest number of variables at a time (e.g. <10)
 
 
 ```{r, warning=FALSE, message=FALSE}
 #| fig-width: 8
 #| fig-height: 8
+
+library(GGally)
+
 ggpairs(penguins)
 ```
 
