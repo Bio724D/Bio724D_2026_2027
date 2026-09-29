@@ -108,8 +108,8 @@ A useful application of contour plots is to depict bivariate probability distrib
 ```{r}
 ggplot(penguins, aes(x = body_mass_g, y = flipper_length_mm)) +
   geom_point(size=1, alpha = 0.5) +
-  scale_color_distiller(palette = "Reds") + 
-  geom_density_2d()
+  geom_density_2d(aes(color = after_stat(level))) + 
+  scale_color_distiller(palette = "Reds") 
 ```
 
 
@@ -196,6 +196,57 @@ better_heat
 ```{r}
 ggsave("cdc28-heatmap.png", better_heat,  width = 4, height = 12, dpi=600)
 ```
+
+## Interactive plots
+
+
+Heatmaps are great, but the exact numbers can be obscured by the color values. We can preserve the big picture visuals of a heatmap and additionally include detailed information by making the plot interactive using the [plotly package](https://plotly.com/ggplot2/).
+
+```{r, warning=FALSE, message=FALSE}
+library(plotly)
+```
+
+
+We will make the same heatmap as before, but we will add interactivity through a tooltip window that displays when the cursor is hovered over the heatmap tiles. We need to specify the data and formatting included in our tooltips to pass to plotly later, so we will use mutate to create a new column with that information:
+
+
+```{r}
+genes_peak5 <- peak.expression$gene[peak.expression$peak == 5]
+
+cdc28_peak5 <- 
+  cdc28_cell_cycle |>
+  filter(gene %in% genes_peak5)
+
+```
+
+
+
+```{r}
+tooltip_data <- 
+  cdc28_peak5 |>
+  mutate(tooltip_text = str_c("Gene: ", gene, "\n", 
+                              "Time (min): ", time, "\n", 
+                              "Expression: ",expression))
+```
+
+Now we can add the tooltip_text column as a "text" call in ggplot, and then use the ggplotly wrapper to start the interactive window
+
+```{r}
+#| fig-width: 6
+#| fig-height: 12
+
+interactive_plot <- 
+  ggplot(tooltip_data, 
+         aes(x = time, y = gene, 
+             fill = expression, text = tooltip_text)) +
+    geom_tile() +
+    scale_fill_gradientn(limits=c(-2.5, 2.5), colors=color.scheme) +
+    theme_bw()
+    
+ggplotly(interactive_plot, tooltip="text")
+```
+
+
 
 
 ## Annotations
@@ -337,10 +388,10 @@ ggsave("microbescope.png", width = 14, height=8)
 
 
 
-
-
-
 ## Misc
+
+
+### GGally
 
   * GGally -- ggpairs; https://ggobi.github.io/ggally/articles/ggpairs.html
   
@@ -356,4 +407,40 @@ library(GGally)
 
 ggpairs(penguins)
 ```
+
+
+### GT for tables
+
+The [`gt` package](https://gt.rstudio.com/) allows you to make publication-ready tables directly from an R data frame, using the piping and filtering syntax that you are familiar with from dplyr. This circumvents any errors you may get while manually creating a table in another format like excel.
+
+Note that one difference from ggplot is that gt uses pipe calls rather than the `+` operator to add layers.
+
+```{r, warning=FALSE, message=FALSE}
+library(gt)
+```
+
+```{r}
+microbescope |> 
+  gt(rowname_col = "disease", groupname_col = "pathogen_type") |> 
+  fmt_percent(columns = case_fatality_rate, 
+              scale_values = FALSE, 
+              drop_trailing_zeros = TRUE) |> 
+  fmt_number(columns = average_basic_reproductive_rate, 
+             drop_trailing_zeros = TRUE) |> 
+  cols_label(
+    case_fatality_rate = md("**Fatality Rate**"),
+    average_basic_reproductive_rate = md("**R0**"),
+    primary_mode_of_transmission ~ md("**Transmission**")) |>
+  tab_header(
+    title = md("**The MicrobeScope**"),
+    subtitle = md("Contagiousness of microbes and pathogens")) |> 
+  tab_source_note(
+    source_note = md("Reference: https://informationisbeautiful.net/visualizations/the-microbescope-infectious-diseases-in-context/"))|> 
+  tab_footnote(
+    footnote = "Methicillin-resistant Staphylococcus aureus.",
+    locations = cells_stub(rows = "MRSA")) |>
+  opt_stylize(style = 6, color = 'gray')
+```
+
+
 
