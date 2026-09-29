@@ -101,15 +101,31 @@ ggplot(xyz, aes(x = x, y = y, z = z)) +
 
 If you want to explicitly label contour lines, see the [metR](https://eliocamp.github.io/metR/index.html) package. 
 
+```{r}
+library(metR)
+
+ggplot(xyz, aes(x = x, y = y, z = z)) +
+  geom_contour(aes(color = after_stat(level)), show.legend = FALSE) +
+  scale_color_distiller(palette = "RdBu", direction = -1) + 
+  geom_text_contour(aes(z = z), stroke = 0.2) +
+  scale_x_continuous(expand = c(0, 0), sec.axis = dup_axis()) +
+  scale_y_continuous(expand = c(0, 0), sec.axis = dup_axis()) +
+  coord_equal() +
+  theme_classic() +
+  theme(axis.title=element_blank())
+```
+
+
 ### Contour plots for depicting bivariate distributions
 
 A useful application of contour plots is to depict bivariate probability distributions, using `geom_density_2d()`
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 ggplot(penguins, aes(x = body_mass_g, y = flipper_length_mm)) +
   geom_point(size=1, alpha = 0.5) +
   geom_density_2d(aes(color = after_stat(level))) + 
-  scale_color_distiller(palette = "Reds") 
+  scale_color_distiller(palette = "Reds") +
+  theme_classic()
 ```
 
 
