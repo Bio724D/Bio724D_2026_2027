@@ -1,7 +1,7 @@
 ---
 title: "Data Wrangling: Challenge Problems"
 author: "Paul M. Magwene"
-date: "2024-10-08"
+date: today
 date-format: iso
 format: 
   html:
@@ -53,7 +53,7 @@ A few complications exist with the data.  They include:
 
 ### Read the data
 
-We explored how to deal with the non-UTF8 encoding in [earlier lecture](https://bio724d.github.io/Bio724D_2025_2026/import_basic_dplyr_template.html#loading-a-file-with-a-non-standard-encoding).
+We explored how to deal with the non-UTF8 encoding in [earlier lecture](https://bio724d.github.io/Bio724D_2026_2027/import_basic_dplyr_template.html#loading-a-file-with-a-non-standard-encoding).
 
 
 The first two columns hold Time (s) and Temperature (°C) info.  
@@ -102,7 +102,6 @@ Having solved the problem above, your data should look like this:
 ```
   
   
-  
 * Create a data frame from the `crypto_tecan_run_strains.csv` file.
 
   * The row addresses in that file are lower case, make them upper case to match the row address information you created for the tecan run data frame
@@ -111,14 +110,7 @@ Having solved the problem above, your data should look like this:
 
 
 
-## Challenge 2: Structure of your data frame
-
-* What are the dimensions of the absorbance data?
-
-* What are the data types of your absorbance?  How many columns contain numeric data? 
-
-
-## Challenge 3: Plot a single well
+## Challenge 2: Plot a single well
 
 
 Now that we've wrangled the data into some basic shape we can start to do something useful with it.  The simplest useful step towards our end goal, would be to plot a single growth curve from this experiment.  This is relatively straightforward because we have a data frame with `time` as a variable, and many columns (`A_1`, `A_2`, etc) that contains absorbance readings.
@@ -130,7 +122,7 @@ Now that we've wrangled the data into some basic shape we can start to do someth
 ![single well plot](./single_well_plot.png)
 
 
-## Challenge 4: Plotting multiple wells in a grid
+## Challenge 3: Plotting multiple wells in a grid
 
 Our next step is to see if we can generate a plot:
 
@@ -157,7 +149,7 @@ Our next step is to see if we can generate a plot:
 ![facet wrapped, all wells](./facet_wrapped_wells.png)
 
 
-## Challenge 5: Fixing the plot order
+## Challenge 4: Fixing the plot order
 
 
 Note that the plots in the figure above are not shown in the order expected. For example the first row is "A_1", "A_10", "A_11", etc.  Why is this?  It turns out that R is sorting our address variable in "string order" rather than numeric order.  We can deal with this by transforming our address variable to a factor rather than string. For our purposes the function `forcats::as_factor()` is the best way to do this (forcats is another tidyverse package)
@@ -181,7 +173,7 @@ The `facet_wrap()` approach above works alright but I'm not crazy about the face
 
 ![facet grid version](./facet_grid_version.png)
 
-## Challenge 6: Adding Strain Information
+## Challenge 5: Adding Strain Information
 
 We've wrangled our data set into a form that's easy to work with. However, we're not done yet as there's important metadata about the strains that we need to add to our plot to make sense of the information we're looking at. 
 
