@@ -1,7 +1,7 @@
 ---
 title: "Data wrangling hands-on annotated"
 author: "Paul M. Magwene"
-date: "2024-10-08"
+date: today
 date-format: iso
 format: 
   html:
