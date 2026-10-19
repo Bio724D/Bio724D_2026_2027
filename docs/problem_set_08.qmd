@@ -27,15 +27,17 @@ Submit both your markdown file (`.qmd`) and the generated HTML document (`.html`
 
 Combining `stringr` functions with regular expressions provides you with a versatile toolkit for manipulating strings in data frames. This can be helpful in many contexts, including data wrangling, updating information, fixing errors, and analyzing data. 
 
-For this current homework, we will be working with the Gasch et al. (2000) data set that you were asked to wrangle as part of Assignment 05. Note that the first column of this data set contains information about each sample, while the other 1000 columns contain the data. We will focus just on the sample column in this problem set.
+For this current homework, we will be working with the Gasch et al. (2000) data set that you were asked to wrangle as part of Assignment 05. Note that the first column of this data set contains information about each sample, while the other 1000 columns contain the data. We will focus just on the sample column in this problem set. 
 
-The information in the first column has two problems: it is not organized in a consistent way and it combines multiple kinds of information. In the following four problems, combine `stringr` functions and regular expression to clean up the sample descriptions. Before tackling today's problems, run the code you wrote for Assignment 05, problem 1 to provide a descriptive name for the first column. In the following, the first column will be called `sample`, but you are free to use any name you choose.
+The information in the first column has two problems: it is not organized in a consistent way and it combines multiple kinds of information. In the following five problems, combine `stringr` functions and regular expressions to clean up the sample descriptions. Before tackling today's problems, run the code you wrote for Assignment 05, problem 1 to provide a descriptive name for the first column. In the following, the first column will be called `sample`, but you are free to use any name you choose.
 
 ### Problems
 
-1. Two experiments include annotations about heat shock treatments. Your task is to make the descriptions of samples from these heat shock experiments consistent by changing the ones beginning with "heat.shock..." and "Heat.Shock..." to "Heat.shock...".
+In each of the following problems, use **`stringr` functions** and **regular expressions** to solve the issue, even if you can think of a different way that is easier for you. The goal here is to practice what we went over in class!
 
-2. Many of the experiments involves samples from several time points. Although the units are often in minutes, some descriptions present this as "min" and others as "minutes". Make descriptions of time consistent by changing every instance of "minutes" to "min".
+1. Two experiments include annotations in the `sample` column about heat shock treatments. Your task is to make the descriptions of samples from these heat shock experiments consistent by changing the ones beginning with "heat.shock..." and "Heat.Shock..." to "Heat.shock...". (Pay close attention to capitals vs lower case.)
+
+2. Many of the experiments involves samples from several time points. Although the units are often given in minutes, some descriptions present this as "min" and others as "minutes". Make descriptions of time consistent by changing every instance of "minutes" to "min".
 
 3. The descriptions that start with "YPD" contain a mix of time points in units of "h" (hours) and "d" (days). Write code to convert the "d" time points into hours and update the units to reflect this change.
 
