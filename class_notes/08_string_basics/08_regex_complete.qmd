@@ -115,6 +115,16 @@ str_view(prots$description, "-like", match = FALSE)
 str_view(prots$description, "Na\\(\\+\\)")
 ```
 
+**Including non-printing characters within a search pattern.** Escaping also allows you to specify non-printing characters such as space (`\\s`), tab (`\\t`), and return (`\\n`).   
+
+```{r non-printing}
+# for this, we need a text file with white space formatting
+jabber <- read_file("jabberwocky.txt")
+
+# find lines that end with an exclamation mark 
+str_view(jabber, "!\\n")
+```
+
 **Define search patterns containing any character at defined positions.** The `.` meta-character (dot) defines a single position within the search pattern that can contain any character except end-of-line. This meta-character is sometimes called a "wildcard", but the term "expansion" is more appropriate. 
 
 In general, try to limit the use of `.`; when you do need to use it, try to include as much other information as possible to speed up the search. Do not try searching for `"."` in a large file! 
@@ -124,9 +134,11 @@ In regex syntax, *any character* means: letters, numbers, symbols, and punctuati
 ```{r dot-metachar}
 # experiment with the . meta-character 
 str_view(prots$description, "TBX.")        
-str_view(prots$description, "tbx.")        # matches are case-sensitive
-str_view(prots$description, "TBX1.")       # . matches spaces and symbols
+str_view(prots$description, "tbx.")        
+str_view(prots$description, "TBX1.")       
 ```
+
+Note that matches are case-sensitive. The `.` meta-character matches spaces and symbols, not just letters and digits.
 
 **Define search patterns containing defined sets of alternatives** Regex syntax provides several ways to define a specific set of possible values for a given position within the search string. 
 
@@ -142,7 +154,7 @@ str_view(mitog, "[^ACTG]")
 
 You can also use ranges to define specific characters.
 
-```{ralternates-2}
+```{r alternates-2}
 # to find all transferases
 str_view(prots$description, "transferase")         
 
@@ -179,20 +191,19 @@ The more flexible method uses pre-defined sets that look like this: `[:name:]`, 
 # same as earlier to find vitamin B6, D3, etc.
 str_view(prots$description, "vitamin [:upper:][:digit:]") 
 
-# match "box " followed by a word character and a letter
+# match "box " followed by a letter character and a digit
 str_view(prots$description, "box [:letter:][:digit:]") 
 ```
 
-**Define search patterns by position**. Meta-characters called *anchors* specify that the search pattern must occur at the beginning or end of a word or line. 
+**Define search patterns by position**. Meta-characters called *anchors* specify that the search pattern must occur at the beginning or end of a word or a line. 
 
 Use `\\b` to to indicate that the search pattern must occur at a word boundary; place it before the pattern to restrict to the beginning of words, after to restrict to ends, and both to indicate that the pattern must occur at both ends of a single word or comprise the entire word. Use `\\B` to indicate the inverse search: the pattern must *not* occur in those locations.  
 
-```{ranchors-1}
+```{r anchors-1}
 # using word anchors
 str_view(prots$description, "amine")           # matches anywhere
 str_view(prots$description, "\\bamine")        # only at the beginning of words
 str_view(prots$description, "amine\\b")        # only at the end
-str_view(prots$description, "\\bamine\\b")     # at both ends, thus the entire word
 ```
 
 To indicate that the search pattern must occur at the beginning or end of a line, use `^` and `&` respectively. In R, the `^` and `&` meta-characters also apply to the beginning and end of a specified *column* if you include a column index (note that this is not true of some other languages). 
@@ -217,9 +228,9 @@ To count the number of matches, use the stringr function `str_count`.
 
 ```{r repeats-2}
 # match three or more consecutive cytosines
-str_count(mitog, "C{3}")               # exactly 3 Cs: "CCC"
-str_count(mitog, "C{3,}")              # at least 3 Cs" "CCC", "CCCC", "CCCCC", "CCCCCC" etc.
-str_count(mitog, "C{3,4}")             # 3 or 4 Cs: "CCC", "CCCC" only 
+str_count(mitog, "C{3}")          # exactly 3 Cs: "CCC"
+str_count(mitog, "C{3,}")         # at least 3 Cs" "CCC", "CCCC", "CCCCC", "CCCCCC" etc.
+str_count(mitog, "C{3,4}")        # 3 or 4 Cs: "CCC", "CCCC" only 
 ```
 
 Note that overlapping strings are not counted. Thus "CCC" matches "CCCC" only once, but matches "CCCCCC" twice. For the same reason, "C{3}" matches "CCCCCC" twice, but "C{3,}" matches it just once. This is why the search pattern "C{3}" finds more matches than "C{3,}" in the above example.  
@@ -279,21 +290,22 @@ This exercise provides an opportunity to build more complex regular expressions.
 
 We'll start by investigating the quality the *L. chalumnae* proteins data set. It's good to get into the habit of carrying out quality checks on an unfamiliar data set before doing any analysis!
 
-**Are there any incomplete sequences?** One way to assess the quality of the protein data set is to look for any incomplete sequences. The first amino acid in every protein is methionine, so we can search for sequences that start with any letter other than "M". This won't find every incomplete sequence, but it is a good overall measure of completeness.
+**Are there any incomplete sequences?** One way to assess the quality of the protein data set is to look for any incomplete sequences. The first amino acid in every protein is methionine, so we can search for sequences that start with any letter other than "M". This won't find every incomplete sequence, but it is a reasonable overall measure of completeness.
 
 ```{r QC-prots-1}
 # define and test the regex
 str_view(prots$sequence, "^M", match = FALSE)
 
 # how many sequences start with a letter other than "M"?
-count(filter(prots, str_detect(prots$sequence, "^M", negate = TRUE)))
+# note different stringr function, uses a different negation 
+count(filter(prots, str_detect(sequence, "^M", negate = TRUE)))
 
 # what are these proteins?
-query <- filter(prots, str_detect(prots$sequence, "^M", negate = TRUE))
+query <- filter(prots, str_detect(sequence, "^M", negate = TRUE))
 query$description
 ```
 
-Notice that the descriptions all say "partial". We are not the first to notice that these particular sequences are incomplete! 
+Notice that the descriptions all end with the word "partial". We are not the first to notice that these particular sequences are incomplete! 
 
 **Do any sequences contain ambiguous characters?** The standard one-letter code for proteins includes four letters that indicate more than one amino acid: **B**, **J**, **X**, and **Z**. (See the [IUPAC website](https://iupac.qmul.ac.uk/AminoAcid/AA1n2.html) for details.) If these letters are common in proteins sequences, it would suggest generally poor data quality.  
 
@@ -302,7 +314,7 @@ Notice that the descriptions all say "partial". We are not the first to notice t
 str_view(prots$sequence, "[BJXZ]")
 
 # what fraction of the proteins contain these letters?
-num_amb <- count(filter(prots, str_detect(prots$sequence, "[BJXZ]")))
+num_amb <- count(filter(prots, str_detect(sequence, "[BJXZ]")))
 print(num_amb / nrow(prots))
 ```
 
@@ -333,7 +345,7 @@ Every identifier is correctly formatted.
 
 Now that we feel more confident about the quality of our data set, we can turn to analysis of the protein sequences. We will start by searching for coelacanth proteins that contain *trafficking signals*, sequences of amino acids that direct a newly synthesized protein to the correct location in the cell. Most trafficking signals are located at one or the other of end of a protein, since these are locations that stick out and can be "read" by cellular machinery. 
 
-**How many proteins contain a peroxisome localization signal?** Eukaryotic cells use at least two different signals to direct proteins to the peroxisome. One of these is: **ser-lys-leu** at the C-terminus.
+**How many proteins contain a peroxisome localization signal?** Eukaryotic cells use at least two different signals to direct proteins to an organelle calledd the peroxisome. One of these is: **ser-lys-leu** at the C-terminus.
 
 ```{r patterns-peroxisome}
 # define and test the regex
@@ -411,10 +423,10 @@ Most of these descriptions either include "protease serine" or name a specific c
 
 ```{r consensus-phos}
 # define the search string
-str_view(prots$sequence, "R[RK][RHKDESTNQCGP][ST]")     # warning: may take > 1 minute!
+str_view(prots$sequence, "R[RK][RHKDESTNQCGP][ST]")     
 ```
 
-Were you surprised by how long this search took? In general, searches take increasing amounts of time in this order: any character, either of 2 characters, any of a few characters, any of a large set of characters. The overall length of the search pattern has much less impact on search time. 
+This is the most computationally intensive pattern search of the entire notebook. In general, searches take increasing amounts of time in this order: any character, either of 2 characters, any of a few characters, any of a large set of characters. The overall length of the search pattern has much less impact on search time. 
 
 **Finding zinc-finger transcription factors.** The genome of every organism contains genes that encode *transcription factors*, proteins that regulate gene expression. Several families of transcription factors have evolved independently, each with a distinct structure and DNA-binding domain. In vertebrates, one of the largest families of transcription factors are *zinc-finger proteins*, which contain the DNA-binding motif **tyr/phe-X-cys-X-cys-X-X-(X)-(X)-cys-X-X-X-phe-X-X-X-X-X-leu-X-X-his-X-X-X-(X)-his** where X is any amino acid and (X) may or may not be present. 
 
