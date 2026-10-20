@@ -119,10 +119,10 @@ str_view(prots$description, "Na\\(\\+\\)")
 
 ```{r non-printing}
 # for this, we need a text file with white space formatting
-jabber <- read_file("jabberwocky.txt")
+catinhat <- read_file("cat_in_hat_excerpt.txt")
 
-# find lines that end with an exclamation mark 
-str_view(jabber, "!\\n")
+# find lines that contain a space followed by letter "i" 
+str_view(catinhat, "\\s[I|i]")
 ```
 
 **Define search patterns containing any character at defined positions.** The `.` meta-character (dot) defines a single position within the search pattern that can contain any character except end-of-line. This meta-character is sometimes called a "wildcard", but the term "expansion" is more appropriate. 
