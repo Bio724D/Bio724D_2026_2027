@@ -9,7 +9,7 @@ format:
 
 ## Introduction
 
-In most programming language, strings are the most generic data type, in that most  other data types can be converted to a string representation but only a subset of strings can be converted to the more specialized data types.  
+In most programming language, strings are the most generic data type, in that mostother data types can be converted to a string representation but only a subset of strings can be converted to the more specialized data types.  
 
 In R, strings are represented by the `character` data type. In this document I will use the term `character` and strings interchangeably. 
 
@@ -48,7 +48,7 @@ Remember that all atomic data types are actually vectors in R:
 # character vector of length 1
 hello <- "Hello, world!"
 
-# character vector of length 
+# character vector of length 2
 greetings <- c("Hello, world!", "Howdy, pardner!") 
 ```
 
@@ -103,7 +103,7 @@ cat(with_newline)
 The `print` function on the other hand returns a character vector representing the argument(s) passed to it:
 
 ```{r}
-# contrast the output produce by print to that of cat
+# contrast the output produced by print to that of cat
 print(with_newline)
 ```
 
