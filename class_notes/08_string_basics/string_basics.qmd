@@ -19,6 +19,7 @@ As we've done in past lectures, we'll be emphasizing string related functions fr
 
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(palmerpenguins)
 ```
 
 
@@ -158,6 +159,18 @@ x <- sample(1:100, 1)
 choicestr <- str_glue("The integer I chose was {x}!")
 choicestr
 ```
+
+The function `str_glue_data` allows you to do string interpolation, but using data frame columns:
+
+```{r}
+
+random_penguins <- slice_sample(penguins, n = 5)
+
+str_glue_data(random_penguins, "I chose a {species} penguin. It was a {sex}! It weighed {body_mass_g} grams.")
+
+```
+
+
 
 
 
