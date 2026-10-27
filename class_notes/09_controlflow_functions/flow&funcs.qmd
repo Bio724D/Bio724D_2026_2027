@@ -20,7 +20,7 @@ So far, most of what have covered in class has focused on commands that are run 
 
 For many data analysis tasks, this interactive, one-step-at-a-time, non-linear process works extremely well. Examples include wrangling data frames and exploratory data analysis. But there will likely be occasions where you need to write a program. Programming is the process of composing individual commands into an overall structure that runs without interruption from start to finish. Programming is particularly useful when you need to carry out the same set of operations many times, when the same set of commands occurs at several different steps in the overall work flow, or when you need to evaluate intermediate results and modify subsequent steps accordingly. A robust program typically also tests that input data is of the correct type and conforms to specific expectations, and may have the ability to handle or report some common errors. Crucially, programming contributes to reproducibility, because it preserves a precise record of all the steps you used to generate the statistical results, figures, and tables in a publication. 
 
-Two kinds of structures are integral to programming, and are part of nearly every computer language.
+Two kinds of structures are integral to programming, and are part of nearly every computer language.  
 
   * **Control flow** provides the ability to move beyond a strictly linear, one-after-another sequence of commands. With *branch* structures, different commands are executed depending on whether a condition is true or false. With *loops*, the same set of commands is repeated a specified number or times or whenever a specified condition is true. 
 
@@ -35,48 +35,51 @@ Most programming languages provide at least two basic kinds of control flow stru
 
 **For loops.** Loops provide a way to execute a set of statements multiple times. R makes it simple to apply a function or arithmetic operation to all of the items in a vector, matrix, or data frame column without needing to set up a loop. But what if you want to carry out the same set of operations on multiple vectors, matrices, data frames, or even files? For loops provide this and many other capabilities. 
 
-The three elements of a for loop are: (1) an object or set of objects that you want to work with, (2) a loop counter, and (3) the body of the loop, namely the statements you want to execute multiple times. 
-
-As an example, here is a loop that reads the contents of three `.csv` files with identical structure but different values, and assigns each to a position within a list. The files are named `2024-MAR-week-#.txt` where `#` is the number of the week. The function uses a `stringr` function and the loop counter to generate the names of the files to be read.
+As an example, let's read the contents of three `.csv` files with identical structure but different values, and assign each to a position within a list. The files are named `2024-MAR-week-#.txt` where `#` is the number of the week. We can do this one file at a time:
 
 ```{r warning=FALSE, message=FALSE}
 # create an empty list to hold the data frames
-weeks1 <- list()
 
 # read each file into the list
-weeks1[[1]] <- read_csv("2024-MAR-week-1.csv")
-weeks1[[2]] <- read_csv("2024-MAR-week-2.csv")
-weeks1[[3]] <- read_csv("2024-MAR-week-3.csv")
 
 # examine the result
-weeks1
+
 ```
 
-Indenting the body of the loop is not required but is strongly recommended for readability.
+This gets quickly becomes tedious, and it's all too easy to make a mistake. In addition, it will be painful (and error-prone) if the naming convention for the input files changes in the future. Imagine what this would be like if you were reading in every week for a full year of data!
+
+The solution to these problems is to use a `for` loop. The three elements of a `for` loop are: (1) an object or set of objects that you want to work with, (2) a loop counter, and (3) the body of the loop, namely the statement or statements you want to execute multiple times. 
+
+The code below uses a `for` loop and the `str_c` function to generate the names of the files to be read and then reads each one in turn. Indenting the body of the loop is not required but is strongly recommended for readability.
 
 ```{r, message=FALSE, warning=FALSE}
 # create an empty list to hold the data frames
-weeks <- list()
-# set up a for loop to read file contents into the list
-for (i in 1:3) {
-  file_name <- str_c("2024-MAR-week-", i, ".txt")
-  weeks[[i]] <- read_csv(file_name)
-}
-```
-```{r}
-for (i in c("Jan", "Feb", "Mar")) {
-  print(i)
-}
+
+# use a for loop to read file contents into the list
+
+# examine the result
 
 ```
 
-Check that the loop worked correctly and examine the data. The list `weeks` is no longer empty: each item in the list is a data frame that contains weather data for one week in March, 2007.
+This produces the same result as before, but the code is in a form that is less likely to contain errors and is much simpler to update. For instance, updating this code to accommodate a change in the naming convention for the input files only requires altering one line of code. Incorporating a full year of weekly weather data only requires changing two lines of code. This is *much* easier than numerous cut-and-paste to generate 52 `read_csv` lines!
 
-```{r}
-weeks
+But what if we want to work with a different number files? Instead of "hard wiring" the number of loops to perform, we can use the data files themselves to determine the number of loops. Create a sub-directory called `data` within your current working directory, then move the three weather data files into it. The code block below uses the base R function `list.files` to create a list of file names within the `data` sub-directory. It then calculates how many files are present, and carries out the appropriate number of loops to capture them all. Try removing one file from `data` to test whether it works as expected. 
+
+```{r message=FALSE, warning=FALSE}
+# read the names of all files in the sub-directory "data" and store in a list
+
+# check the result
+
+# create an empty list to hold the data frames
+
+# use a for loop to read file contents into the list
+
+# check the result
+
 ```
 
-We could have easily written three lines of code, each importing a different file. But imagine doing this for every week of the year. If any part of the line needed to be changed in the future, it would require modifying 52 lines of code! This would be laborious and create many opportunities for errors. 
+This is again the same result as before, but it is now a more robust, reusable block of code. 
+
 
 **If / else structures.** Branches provide a way to execute different blocks of code or skip specific blocks of code depending on a condition. The most basic form of branching is an if/else structure. You provide a condition: if the condition is true, the `if` block of code is executed; if it is false, the `else` block of code is executed. It is also possible to use an `if` statement by itself (without an `else`).   
 
@@ -89,15 +92,6 @@ Again, indenting is not required but is strongly recommended. As structures beco
 ```{r}
 # set up a for loop to step through the 'weeks' list
 # use an if / else structure to provide different reports based on total rainfall
-for (i in 1:3){
-  if (sum(weeks[[i]]$precip) == 0) {
-    print(str_c("There was no rain in week ", i))
-  }
-  else {
-    total_rain <- sum(weeks[[i]]$precip)
-    print(str_c("Rainfall in week ", i, " was ", total_rain, "cm."))
-  }
-}
 
 ```
 
@@ -123,9 +117,9 @@ To illustrate how functions work, we will write some functions that process Lewi
 
 ```{r}
 # read the file into a data object
-jabber <- read_file("Jabberwocky.txt")
+
 # review the organization of the poem
-jabber
+
 ```
 
 **Naming functions.** It is good practice to give your functions names that describe what they do. In general, use verbs for function names and nouns for data object names. Strive to keep function names short, but favor clarity over brevity (remember that auto-complete can do most of the typing for you). 
@@ -136,8 +130,7 @@ A handy function called `exists` can check whether a function (or any other obje
 
 ```{r}
 # check to see if any object has been defined; note the quotes
-exists("count")
-exists("count_lines")
+
 ```
 
 It's good that we checked, as there is a base R function called `count`! The more specific name `count_lines` is not in use by base R or any other library that is currenty loaded.
@@ -147,12 +140,8 @@ It's good that we checked, as there is a base R function called `count`! The mor
 Once again, indenting is optional but strongly recommended for clarity. 
 
 ```{r}
-# define a function to count the number of lines in a text object
-count_lines <- function(text) {
-  line_tally <- str_count(text, "\\n")
-}
-  
- 
+# define function to count number of lines in a text object
+
 ```
 
 Note that the function `count_lines` now exists in the environment. Like all objects created during an R session, it will disappear when you close the file or quit. We will look at how to save functions next week, but for now you can easily re-create a function by running the code block that defines it.
@@ -160,13 +149,13 @@ Note that the function `count_lines` now exists in the environment. Like all obj
 To invoke the function, substitute `text` for the object you want the function to work with; internally, that object is known by the variable name in the function definition.
 
 ```{r}
-result <- count_lines(jabber)
+
 ```
 
 This code block runs without an error, but it also does not return any output. To capture the result of a function, assign it to a value.
 
 ```{r}
-result
+
 ```
 
 Our function generates a number, which is what we wanted. Or is it?
@@ -175,18 +164,13 @@ Our function generates a number, which is what we wanted. Or is it?
 
 ```{r}
 # modify the function to avoid double-counting 
-count_lines <- function(text) {
-  line_tally <- str_count(text, "\\n+")
-}
+
 ```
 
 This still isn't right! Can you spot the problem?
 
 ```{r}
 # modify the function again to count lines correctly 
-count_lines <- function(text) {
-  line_tally <- str_count(text, "\\n+") + 1
-}
 ```
 
 Now it returns the correct value.
@@ -201,10 +185,7 @@ An important limitation to remember is that R functions can only return one data
 
 ```{r}
 # modify the function to make the return value explicit 
-count_lines <- function(text) {
-  line_tally <- str_count(text, "\\n+") + 1
-  return(line_tally)
-}
+
 ```
 
 The function works as it did before, but the logic is clearer (including to future you).
@@ -240,7 +221,7 @@ Note that our function isn't perfect: it can't distinguish letters from punctuat
 **Viewing function code.** If you want to see the code for *any* function, you can do so by typing its name without the `()` that is used to store input values. This works for functions in base R and for any libraries that are currently loaded. (The `View` function also works.) The ability to access code for well-constructed functions can be very handy for writing your own functions. Try looking at the code for some functions to see how they work. 
 
 ```{r}
-str_c
+
 ```
 
 Many `tidyverse` functions are "wrappers" that simply call other functions and present them in a more consistent manner. This is the case for many of the `stringr` functions, for example. Some base R functions return the somewhat cryptic message `Primitive("c")`. This just means that the function is actually a program written in  `C` (usually to provide faster execution) and you won't be able to view the code. 
