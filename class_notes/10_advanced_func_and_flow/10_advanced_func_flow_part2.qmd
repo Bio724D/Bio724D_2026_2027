@@ -73,8 +73,14 @@ The `map2` function applies a transformation function to two sequences in parall
 first.names <- c("John", "Mary", "Fred")
 last.names <- c("Smith", "Hernandez", "Kidogo")
 
+map2(first.names, last.names, c)
+```
+
+```{r}
+# how does this output differ from that above?
 map2(first.names, last.names, str_c, sep=" ")
 ```
+
 
 Note how we can specify  arguments to the transformation function as additional arguments to `map2` (i.e., the `sep` argument gets passed to `str_c`)
 
