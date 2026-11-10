@@ -19,7 +19,7 @@ Refer to chapter 17 in *R for Data Science* (2nd ed) and the slide deck for this
 
 ## Set-up
 
-The only package we need to install is `tidyverse`, since `lubridate` is a standard component. Some older videos and books may instruct you to load `lubridate` separately, as it was initially a separate package, but this is no longer necessary. However, be aware that if you are working with legacy code that requires an older version of R, you may still need to load `lubridate` separately.
+The only package we need to load is `tidyverse`, since `lubridate` is a standard component. Some older videos and books may instruct you to load `lubridate` separately, as it was initially a separate package, but this is no longer necessary. If you are working with legacy code that requires an older version of R, you may still need to load `lubridate` separately.
 
 ```{r label=set-up}
 # load packages
@@ -69,7 +69,7 @@ today()
 # retrieve the current date and time
 now()
 ```
-Note that both objects are returned in ISO 8601 format and that the second object includes an abbreviation for the time zone.
+Note that both objects are returned in ISO 8601 format and that the second object includes an abbreviation for the current time zone.
 
 Rabbit hole: You can also retrieve the current date and time using the base R function `date`. Note that the base R function `time` does *not* return the current time, but instead generates a vector of time samples from a data frame. You can use the base R function `Sys.timezone` to retrieve the current time zone. For reasons of simplicity and consistency, it's usually best to use the `lubridate` functions.   
 
@@ -119,9 +119,12 @@ A common data cleaning task is converting dates and date-times to **ISO 8601** f
 
 **Usage.** To use these functions, first identify the order of units in the input data, specifically which values correspond to year (**y**), month (**m**), and date (**d**). This can be difficult or impossible to determine with just one or a few values, but is usually clear when many values are present. Next, select the function with the name that corresponds to the order of units. For example, if dates are in the format commonly used in the US, you will need to use `mdy` to convert to ISO 8601 format.
 
-**Creating date objects.** This family of functions has a different version for every possible order of units, including `myd`, which you are very unlikely to need! 
+**Creating date objects.** This family of functions has a different version for every possible order of units, including `myd`, which you are very unlikely to need! Note that the result is stored as a date object with an integer value for the date, but that the representation is a string. If you want the string (human-readable form), you will need to convert it.
 ```{r}
 test_1 <- mdy("09-22-2022")
+test_1
+typeof(test_1)
+class(test_1)
 str(test_1)
 test_2 <- dmy("22-09-2022")
 str(test_2)
@@ -180,8 +183,10 @@ Important: these functions return numeric, character, or logical values, *not* d
 ```{r}
 extract_1 <- year(test_3)
 extract_1
+typeof(extract_1)
 extract_2 <- mday(test_3)
 extract_2
+typeof(extract_2)
 ```
 Other functions extract month, hour, minute, and second.
 
@@ -269,9 +274,9 @@ dur_3[2]
 dur_3[3]
 dur_3[4]
 ```
-Durations are returned in seconds, along with a helpful conversion into appropriately scaled, human-readable units.
+Durations are represented in seconds, along with a helpful conversion into an appropriately scaled, human-readable unit.
 
-For small time units, the conversion into seconds is exact. For example, 1 minute = 60 seconds. For the two largest time units, the conversion is approximate: `lubridate` uses the "average" of 365.25 days to represent 1 year and 4.35 weeks to represent 1 month.
+For small time units, the conversion into seconds is exact. For example, 1 minute = 60 seconds. For the two largest time units, the conversion is approximate: `lubridate` uses the approximate averages of 365.25 days to represent 1 year and 4.35 weeks or 30.45 days to represent 1 month.
 ```{r}
 dur_4 <- dmonths(2)
 dur_4
@@ -282,7 +287,7 @@ dur_5 <- dmicroseconds(2355345245)
 dur_5
 ```
 
-**Math with durations.** The basic math operators all work with durations.
+**Arithmetic with durations.** The basic math operators work with durations.
 ```{r}
 dur_6 <- ddays(4) + ddays(62)
 dur_6
@@ -316,12 +321,12 @@ class(per_1)
 per_2 <- minutes(240)
 per_2
 ```
-**Math with period objects.** The standard arithmetic operators work with period objects.  
+**Arithmetic with period objects.** The standard math operators work with period objects.  
 ```{r}
 per_3 <- per_1 + per_2          
 per_3
 ```
-Note that mixing different units does not result in unit conversion. Importantly, it also does not result in unit consolidation. In the example above, the result is 8 hours, but is represented as 4 hours and 240 minutes. This is different from durations, which convert everything to seconds.
+Note that mixing different units does not result in unit conversion and consolidation. In the example above, the result is 8 hours, but is represented as 4 hours and 240 minutes. This is different from durations, which convert everything to seconds.
 
 To convert period objects of different units to a common unit, use the function `period_to_seconds`. For the larger units, the function assumes that a year is 365.25 days long and a month is that number of seconds divided by 12. In other words a month is neither 28, 29, 30, nor 31 days long.
 ```{r}
@@ -338,7 +343,7 @@ Adding a period object to a date or date-time object returns a date or date-time
 per_6 <- today() + days(42)
 per_6
 ```
-**Math with durations *vs* periods.** Notice the different result when adding a duration compared with adding a period to the current date. Adding a period produces a more human-friendly result, namely the same date, two months from now. Adding duration might give a different date (depending on whether the two month have 28, 29, 30, or 31 days), and it always converts the date object to a date-time object in order to accommodate the extra seconds that are used to represent an "average" month.   
+**Arithmetic with durations *vs* periods.** Notice the different result when adding a duration compared with adding a period to the current date. Adding a period produces a more human-friendly result, namely the same date, two months from now. Adding duration might give a different date (depending on whether the months have 28, 29, 30, or 31 days), and it always converts the date object to a date-time object in order to accommodate the extra seconds that are used to represent an "average" month.   
 ```{r}
 # add a period of 2 months to today's date
 today() + months(2)    
@@ -349,7 +354,7 @@ today() + dmonths(2)
 
 ### Intervals
 
-An **interval** is a time span that is defined by two values: a starting point at a specific date-time and an end point at a specific date-time. It's length is defined as the difference between the start and end points, after after taking into account any irregularities like leap years and daylight savings time. A simple way to think about an interval is that it is the amount of time between two date-time points.
+An **interval** is a time span that is defined by two values: a starting point at a specific date-time and an end point at a specific date-time. It's length is defined as the difference between the start and end points, after after taking into account any irregularities like month lengths, leap years, and daylight savings time. A simple way to think about an interval is that it is the amount of time between two date-time points.
 
 Intervals can be useful for field observations and experiments where you are taking notes in human time rather than using a stopwatch.
 
@@ -358,6 +363,7 @@ Intervals can be useful for field observations and experiments where you are tak
 The following is an example using date objects:
 ```{r}
 intv_1 <- ymd("2024-01-01") %--% ymd("2024-02-29")
+intv_1
 str(intv_1)
 ```
 Note that an interval data object contains three values: its length in seconds, its starting point, and the time zone. 
@@ -398,7 +404,7 @@ intv_5
 ```
 
 
-**Math with intervals.** One useful feature of an interval is that it can return an exact measure of the time that elapses between a given starting and ending point that is based on human-readable dates and times.  
+**Arithmetic with intervals.** One useful feature of an interval is that it can return an exact measure of the time that elapses between a given starting and ending point that is based on human-readable dates and times.  
 
 An example is the length of the month February, which differs depending on the year:
 ```{r}
@@ -411,15 +417,15 @@ A second useful feature of intervals is that they can test for overlap, enclosur
 
 Use the `%within%` operator to test whether a date, date-time, or interval falls within an interval: 
 ```{r}
-intv_6 <- ymd("2025-08-25") %--% ymd("2025-11-25")   # fall semester for graduate courses
+intv_6 <- ymd("2026-08-24") %--% ymd("2026-11-24")   # fall semester for graduate courses
 today() %within% intv_6                              # is today in the fall semester?
-ymd("2025-12-12") %within% intv_6                    # what about the last day of the year? 
+ymd("2026-12-12") %within% intv_6                    # what about the last day of the year? 
 ```
 Use the functions `int_overlaps` and `int_aligns` to test whether a date, date-time, or interval overlaps with an interval or shares an endpoint, respectively.
 ```{r}
-intv_7 <- ymd("2025-11-27") %--% ymd("2024-11-30")  # Thanksgiving break
+intv_7 <- ymd("2026-11-24") %--% ymd("2026-11-30")  # Thanksgiving break
 int_overlaps(intv_6, intv_7)                        # TG break overlap with the semester?
-intv_8 <- ymd_h("2025-08-25 00") %--% ymd_h("2025-08-26 00")  # FDOC                       
+intv_8 <- ymd_h("2026-08-24 00") %--% ymd_h("2026-08-25 00")  # FDOC                       
 int_aligns(intv_6, intv_8)                          # FDOC align with the semester?
 ```
 These logical returns can be very useful for filtering rows or as condition in control flow structures.
