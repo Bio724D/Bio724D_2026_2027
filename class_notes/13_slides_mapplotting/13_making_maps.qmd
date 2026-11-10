@@ -79,7 +79,7 @@ st_crs(countries)
 
 Mapping a data frame representing simple features data in ggplot is easy using the `geom_sf` object.
 
-The default coordinate system used is WGS84 with a Mercator projection:
+The default coordinate refence system used is called [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System):
 
 ```{r}
 ggplot() +
@@ -119,7 +119,7 @@ ggplot() +
 ## Mapping with a different CRS
 
 
-If we want to use a different coordinate system we can specify that using the `coord_sf` function. Here we use [EPS:3035](https://spatialreference.org/ref/epsg/3035/) which uses the Lambert Azimuthal Equal Area projection.
+If we want to use a different coordinate system we can specify that using the `coord_sf` function. Here we use [EPS:9311](https://spatialreference.org/ref/epsg/9311/) which uses the Lambert Azimuthal Equal Area projection.
 
 Note that because we specified our point data (location of Durham) as an `sf` object the CRS transform also applies to that data:
 
@@ -128,13 +128,25 @@ Note that because we specified our point data (location of Durham) as an `sf` ob
 ggplot(data = countries) +
     geom_sf() +
     geom_sf(data = durham_sf, color="red") +
-    coord_sf(crs = st_crs("EPSG:3035")) 
+    coord_sf(crs = st_crs("EPSG:9311")) 
     
 ```
 
-## Chloropleth plots
+Here's yet another representation using a conical projection centered on the US:
 
-A chloropleth plot is a map in which the areas or regions are colored with respect to a numerical variable.  The Natural Earth country data files include information on population (`POP_EST`) so let's plot this numerical variable on our map. We'll also demonstrate how to zoom in on a particular map region (note xlim = longitude limits, ylim = latitude limits)
+```{r}
+ggplot(data = countries) +
+    geom_sf() +
+    geom_sf(data = durham_sf, color="red") +
+    coord_sf(crs = st_crs("ESRI:102965")) 
+    
+```
+
+
+
+## Choropleth plots
+
+A choropleth plot is a map in which the areas or regions are colored with respect to a numerical variable.  The Natural Earth country data files include information on population (`POP_EST`) so let's plot this numerical variable on our map. We'll also demonstrate how to zoom in on a particular map region (note xlim = longitude limits, ylim = latitude limits)
 
 ```{r}
 ggplot() +
@@ -187,7 +199,7 @@ ggplot() +
   coord_sf(crs = st_crs("EPSG:5072")) 
 ```
 
-Let's further filter the US states to only include those in the continental US and then use patchwork to compare the Mercator projection to an area preserving Albers projection:
+Let's further filter the US states to only include those in the continental US and then use patchwork to compare the WGS84 projection to an area preserving Albers projection that is well suited for the continental US (https://epsg.io/6350):
 
 ```{r}
 continental_us <- 
