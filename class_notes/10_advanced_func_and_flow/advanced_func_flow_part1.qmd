@@ -263,7 +263,9 @@ num_legs("boa constrictor")
 
 Again, the `stop` statement is not required, but it is recommended.  
 
-Note that `dplyr` provides a control flow structure called `case_when` that is similar to `switch`. We will not cover it here, but you may encounter it in code written by others.
+`dplyr` provides a control flow structure called `case_when` that is similar to `switch`.
+
+
 
 **Vectorized if/else.** R encourages vectorized operations, where a single statement applies to every item in a vector. You can apply a more limited version of an `if/else` structure to a vector using the `ifelse` function. This function takes a vector as input and returns a vector of the same length.
 

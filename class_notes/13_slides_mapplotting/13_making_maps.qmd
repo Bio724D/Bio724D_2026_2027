@@ -239,7 +239,7 @@ ggplot() +
   geom_sf(data = north_carolina)
 ```
 
-## Plotting localilies on our NC map
+## Plotting localities on our NC map
 
 
 As a final example, let's plot the locations in North Carolina where there have been reported sightings of rare and beautiful North Carolina Blue Snouters.
